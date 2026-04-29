@@ -1,0 +1,1390 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Creador de Personajes — D&D 2024</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700;900&family=Cinzel:wght@400;500;600;700&family=Crimson+Text:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+<style>
+:root {
+  --gold:#c9a84c;--gold-light:#e8c97a;--gold-dark:#8a6a1f;
+  --crimson:#8b1a1a;--crimson-dark:#5a0f0f;
+  --parchment:#f5e8c7;--ink:#1a0f0a;--ink-light:#3d2b1f;
+  --bg:#0d0805;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:var(--bg);color:var(--parchment);font-family:'Crimson Text',Georgia,serif;min-height:100vh;
+  background-image:radial-gradient(ellipse at 20% 50%,rgba(139,26,26,.08) 0%,transparent 50%),radial-gradient(ellipse at 80% 20%,rgba(201,168,76,.05) 0%,transparent 40%);}
+body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
+  background-image:radial-gradient(1px 1px at 10% 15%,rgba(255,255,200,.4) 0%,transparent 100%),radial-gradient(1px 1px at 25% 45%,rgba(255,255,200,.3) 0%,transparent 100%),radial-gradient(1px 1px at 50% 10%,rgba(255,255,200,.5) 0%,transparent 100%),radial-gradient(1px 1px at 70% 30%,rgba(255,255,200,.2) 0%,transparent 100%),radial-gradient(1px 1px at 85% 70%,rgba(255,255,200,.4) 0%,transparent 100%),radial-gradient(1px 1px at 40% 80%,rgba(255,255,200,.3) 0%,transparent 100%);}
+.app{position:relative;z-index:1;max-width:980px;margin:0 auto;padding:2rem 1.5rem 4rem;}
+
+/* HEADER */
+header{text-align:center;padding:3rem 0 2rem;}
+header::after{content:'';display:block;width:80%;height:1px;background:linear-gradient(90deg,transparent,var(--gold),transparent);margin:1.5rem auto 0;}
+.header-sub{font-family:'Cinzel',serif;font-size:.75rem;letter-spacing:.4em;color:var(--gold);text-transform:uppercase;margin-bottom:.8rem;}
+h1{font-family:'Cinzel Decorative',serif;font-size:clamp(1.8rem,5vw,3rem);color:var(--gold-light);text-shadow:0 0 40px rgba(201,168,76,.4),0 2px 4px rgba(0,0,0,.8);line-height:1.2;}
+h1 span{color:var(--crimson);text-shadow:0 0 30px rgba(139,26,26,.6),0 2px 4px rgba(0,0,0,.8);}
+
+/* PROGRESS */
+.progress-wrap{margin:2rem 0;}
+.progress-steps{display:flex;justify-content:center;position:relative;}
+.progress-steps::before{content:'';position:absolute;top:50%;left:2%;right:2%;height:1px;background:var(--gold-dark);transform:translateY(-1.1rem);z-index:0;}
+.step{display:flex;flex-direction:column;align-items:center;gap:.4rem;flex:1;position:relative;z-index:1;}
+.step-circle{width:2rem;height:2rem;border-radius:50%;border:1px solid var(--gold-dark);background:var(--bg);display:flex;align-items:center;justify-content:center;font-family:'Cinzel',serif;font-size:.7rem;color:rgba(245,232,199,.35);transition:all .3s;}
+.step.active .step-circle{border-color:var(--gold);color:var(--gold);box-shadow:0 0 12px rgba(201,168,76,.4);background:rgba(201,168,76,.1);}
+.step.done .step-circle{border-color:var(--gold-dark);background:var(--gold-dark);color:var(--bg);}
+.step-label{font-family:'Cinzel',serif;font-size:.52rem;letter-spacing:.08em;text-transform:uppercase;color:rgba(245,232,199,.35);text-align:center;}
+.step.active .step-label{color:var(--gold);}
+.step.done .step-label{color:var(--gold-dark);}
+
+/* PANEL */
+.panel{background:linear-gradient(160deg,rgba(26,15,10,.97),rgba(13,8,5,.99));border:1px solid var(--gold-dark);border-radius:4px;padding:2.5rem;margin:1.5rem 0;position:relative;animation:panelIn .35s ease;display:none;}
+.panel.active{display:block;}
+@keyframes panelIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.panel::before{content:'';position:absolute;inset:2px;border:1px solid rgba(201,168,76,.06);border-radius:3px;pointer-events:none;}
+.panel-step{font-family:'Cinzel',serif;font-size:.65rem;letter-spacing:.3em;text-transform:uppercase;color:var(--gold);margin-bottom:.3rem;}
+.panel h2{font-family:'Cinzel Decorative',serif;font-size:1.5rem;color:var(--parchment);margin-bottom:.5rem;}
+.panel-desc{font-size:1rem;color:rgba(245,232,199,.6);font-style:italic;margin-bottom:1.8rem;line-height:1.5;}
+
+/* INPUTS */
+.name-wrap{display:flex;flex-direction:column;gap:.5rem;margin-bottom:1.5rem;}
+.name-wrap label{font-family:'Cinzel',serif;font-size:.7rem;letter-spacing:.15em;color:var(--gold);}
+input[type=text]{background:rgba(0,0,0,.5);border:1px solid var(--gold-dark);border-radius:3px;padding:.75rem 1rem;color:var(--parchment);font-family:'Crimson Text',serif;font-size:1.2rem;outline:none;transition:border-color .2s;width:100%;}
+input[type=text]:focus{border-color:var(--gold);}
+
+/* BUTTONS */
+.btn{font-family:'Cinzel',serif;font-size:.78rem;letter-spacing:.12em;text-transform:uppercase;padding:.7rem 1.5rem;border:1px solid var(--gold);border-radius:3px;cursor:pointer;transition:all .2s;white-space:nowrap;}
+.btn-primary{background:linear-gradient(135deg,var(--crimson-dark),var(--crimson));color:var(--gold-light);box-shadow:0 2px 8px rgba(139,26,26,.4);}
+.btn-primary:hover{background:linear-gradient(135deg,var(--crimson),#a82020);box-shadow:0 4px 16px rgba(139,26,26,.6);transform:translateY(-1px);}
+.btn-secondary{background:transparent;color:var(--gold);border-color:var(--gold-dark);}
+.btn-secondary:hover{border-color:var(--gold);background:rgba(201,168,76,.1);}
+.btn:disabled{opacity:.35;cursor:not-allowed;transform:none;}
+.btn-sm{padding:.5rem 1rem;font-size:.7rem;}
+
+/* LEVEL SELECTOR */
+.level-grid{display:grid;grid-template-columns:repeat(10,1fr);gap:.4rem;margin-bottom:1.5rem;}
+.lvl-btn{border:1px solid var(--gold-dark);border-radius:3px;padding:.5rem .2rem;text-align:center;cursor:pointer;font-family:'Cinzel',serif;font-size:.8rem;color:rgba(245,232,199,.5);background:rgba(0,0,0,.3);transition:all .2s;}
+.lvl-btn:hover{border-color:var(--gold);color:var(--gold);}
+.lvl-btn.selected{border-color:var(--gold);background:rgba(201,168,76,.15);color:var(--gold-light);box-shadow:0 0 10px rgba(201,168,76,.2);}
+.lvl-btn.tier1{border-color:rgba(100,200,100,.3);}
+.lvl-btn.tier1.selected{border-color:#6dc86d;background:rgba(109,200,109,.12);color:#6dc86d;}
+.lvl-btn.tier2{border-color:rgba(100,150,255,.3);}
+.lvl-btn.tier2.selected{border-color:#6496ff;background:rgba(100,150,255,.12);color:#6496ff;}
+.lvl-btn.tier3{border-color:rgba(200,100,255,.3);}
+.lvl-btn.tier3.selected{border-color:#c864ff;background:rgba(200,100,255,.12);color:#c864ff;}
+.lvl-btn.tier4{border-color:rgba(255,150,50,.3);}
+.lvl-btn.tier4.selected{border-color:#ff9632;background:rgba(255,150,50,.12);color:#ff9632;}
+.tier-labels{display:grid;grid-template-columns:repeat(4,1fr);gap:.4rem;margin-bottom:.8rem;}
+.tier-label{font-family:'Cinzel',serif;font-size:.58rem;letter-spacing:.1em;text-align:center;padding:.2rem;border-radius:2px;}
+
+/* OPTION CARDS */
+.options-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(165px,1fr));gap:.9rem;margin-bottom:1.5rem;}
+.opt-card{border:1px solid var(--gold-dark);border-radius:4px;padding:1rem;cursor:pointer;transition:all .2s;background:rgba(0,0,0,.3);position:relative;}
+.opt-card:hover{border-color:var(--gold);transform:translateY(-2px);background:rgba(201,168,76,.05);}
+.opt-card.selected{border-color:var(--gold);background:rgba(201,168,76,.12);box-shadow:0 0 18px rgba(201,168,76,.18);}
+.opt-icon{font-size:1.7rem;margin-bottom:.45rem;display:block;}
+.opt-tag{display:inline-block;font-family:'Cinzel',serif;font-size:.58rem;letter-spacing:.1em;background:rgba(201,168,76,.12);border:1px solid rgba(201,168,76,.25);border-radius:2px;padding:.1rem .4rem;color:var(--gold);margin-bottom:.3rem;}
+.opt-name{font-family:'Cinzel',serif;font-size:.82rem;letter-spacing:.04em;color:var(--gold-light);margin-bottom:.25rem;}
+.opt-desc{font-size:.78rem;color:rgba(245,232,199,.5);font-style:italic;line-height:1.4;}
+.opt-card.selected .opt-desc{color:rgba(245,232,199,.72);}
+
+/* SPELL CARDS */
+.spell-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:.7rem;margin-bottom:1rem;}
+.spell-card{border:1px solid rgba(201,168,76,.25);border-radius:3px;padding:.8rem 1rem;cursor:pointer;transition:all .2s;background:rgba(0,0,0,.25);}
+.spell-card:hover{border-color:var(--gold);background:rgba(201,168,76,.06);}
+.spell-card.selected{border-color:var(--gold);background:rgba(201,168,76,.14);box-shadow:0 0 10px rgba(201,168,76,.15);}
+.spell-card.cantrip{border-color:rgba(100,200,255,.25);}
+.spell-card.cantrip.selected{border-color:#64c8ff;background:rgba(100,200,255,.1);}
+.spell-name{font-family:'Cinzel',serif;font-size:.8rem;color:var(--gold-light);margin-bottom:.2rem;}
+.spell-card.cantrip .spell-name{color:#64c8ff;}
+.spell-school{font-size:.72rem;color:rgba(245,232,199,.45);font-style:italic;margin-bottom:.2rem;}
+.spell-desc{font-size:.78rem;color:rgba(245,232,199,.55);line-height:1.4;}
+.spell-card.selected .spell-desc{color:rgba(245,232,199,.75);}
+
+.spell-section-title{font-family:'Cinzel',serif;font-size:.7rem;letter-spacing:.2em;text-transform:uppercase;color:var(--gold);margin:1.2rem 0 .6rem;border-bottom:1px solid rgba(201,168,76,.2);padding-bottom:.3rem;}
+.spell-counter{font-family:'Cinzel',serif;font-size:.75rem;color:rgba(245,232,199,.5);margin-bottom:.6rem;}
+.spell-counter span{color:var(--gold-light);font-size:.9rem;}
+
+/* DETAIL BOX */
+.detail-box{border:1px solid rgba(201,168,76,.2);border-radius:3px;padding:1.2rem 1.5rem;background:rgba(201,168,76,.04);margin-bottom:1.5rem;display:none;animation:fadeIn .3s ease;}
+.detail-box.visible{display:block;}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+.detail-title{font-family:'Cinzel',serif;font-size:.75rem;letter-spacing:.15em;color:var(--gold);margin-bottom:.6rem;text-transform:uppercase;}
+.detail-body{font-size:.95rem;color:rgba(245,232,199,.8);line-height:1.7;}
+.detail-chips{display:flex;flex-wrap:wrap;gap:.4rem;margin-top:.8rem;}
+.chip{font-family:'Cinzel',serif;font-size:.62rem;letter-spacing:.1em;border:1px solid rgba(201,168,76,.3);border-radius:2px;padding:.2rem .6rem;color:var(--gold);background:rgba(201,168,76,.07);}
+
+/* STATS */
+.stats-preview{display:grid;grid-template-columns:repeat(6,1fr);gap:.5rem;margin:1rem 0;}
+.stat-box{border:1px solid rgba(201,168,76,.25);border-radius:3px;padding:.5rem .3rem;text-align:center;background:rgba(0,0,0,.2);}
+.stat-label{font-family:'Cinzel',serif;font-size:.55rem;letter-spacing:.08em;color:var(--gold-dark);display:block;margin-bottom:.15rem;}
+.stat-val{font-family:'Cinzel Decorative',serif;font-size:1.1rem;color:var(--parchment);}
+.stat-mod{font-size:.7rem;color:var(--gold);}
+
+/* NAV */
+.nav-row{display:flex;justify-content:space-between;align-items:center;margin-top:1.5rem;gap:1rem;}
+
+/* ── CHARACTER SHEET ── */
+#sheet-wrap{display:none;}
+.sheet{background:var(--parchment);color:var(--ink);border-radius:5px;padding:2.5rem 2.5rem 3rem;position:relative;font-family:'Crimson Text',serif;box-shadow:0 20px 60px rgba(0,0,0,.85),inset 0 0 80px rgba(0,0,0,.04);}
+.sheet::before{content:'';position:absolute;inset:8px;border:1px solid rgba(139,26,26,.18);pointer-events:none;border-radius:3px;}
+.sheet-header{text-align:center;border-bottom:2px solid var(--crimson-dark);padding-bottom:1.2rem;margin-bottom:1.8rem;}
+.sheet-pre{font-family:'Cinzel',serif;font-size:.62rem;letter-spacing:.3em;color:var(--crimson-dark);margin-bottom:.3rem;}
+.sheet-name{font-family:'Cinzel Decorative',serif;font-size:2.2rem;color:var(--ink);line-height:1.1;margin-bottom:.3rem;}
+.sheet-meta{font-family:'Cinzel',serif;font-size:.78rem;letter-spacing:.1em;color:var(--crimson);}
+.sheet-grid{display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;margin-bottom:1.5rem;}
+.sheet-section{margin-bottom:1.5rem;}
+.sheet-section-title{font-family:'Cinzel',serif;font-size:.66rem;letter-spacing:.25em;text-transform:uppercase;color:var(--crimson-dark);border-bottom:1px solid rgba(139,26,26,.25);padding-bottom:.25rem;margin-bottom:.7rem;}
+.sheet-content{font-size:.97rem;color:var(--ink-light);line-height:1.65;}
+.sheet-stats-row{display:grid;grid-template-columns:repeat(6,1fr);gap:.6rem;margin-bottom:1.5rem;}
+.sheet-stat{border:1px solid rgba(139,26,26,.22);border-radius:3px;padding:.6rem .3rem;text-align:center;background:rgba(139,26,26,.03);}
+.sheet-stat-label{font-family:'Cinzel',serif;font-size:.55rem;letter-spacing:.15em;color:var(--crimson);display:block;margin-bottom:.15rem;}
+.sheet-stat-val{font-family:'Cinzel Decorative',serif;font-size:1.4rem;color:var(--ink);display:block;}
+.sheet-stat-mod{font-size:.8rem;color:var(--crimson-dark);}
+.sheet-boxes{display:grid;grid-template-columns:repeat(3,1fr);gap:.8rem;margin-bottom:1.5rem;}
+.sheet-box{border:1px solid rgba(139,26,26,.22);border-radius:3px;padding:.7rem;text-align:center;}
+.sheet-box-label{font-family:'Cinzel',serif;font-size:.58rem;letter-spacing:.15em;color:var(--crimson);display:block;margin-bottom:.2rem;}
+.sheet-box-val{font-family:'Cinzel Decorative',serif;font-size:1.6rem;color:var(--ink);}
+.trait-item{padding:.3rem 0 .3rem .9rem;border-left:2px solid rgba(139,26,26,.2);margin-bottom:.4rem;font-size:.95rem;}
+.trait-name{font-family:'Cinzel',serif;font-size:.7rem;color:var(--crimson-dark);display:block;margin-bottom:.1rem;}
+.history-box{font-style:italic;font-size:1.02rem;line-height:1.8;border-left:3px solid rgba(139,26,26,.3);padding-left:1rem;color:var(--ink-light);}
+.list-inline{font-size:.95rem;color:var(--ink-light);}
+.spell-slot-table{display:grid;grid-template-columns:repeat(5,1fr);gap:.4rem;margin:.5rem 0;}
+.slot-cell{border:1px solid rgba(139,26,26,.2);border-radius:2px;padding:.4rem .2rem;text-align:center;background:rgba(139,26,26,.03);}
+.slot-cell-label{font-family:'Cinzel',serif;font-size:.5rem;color:var(--crimson);display:block;}
+.slot-cell-val{font-family:'Cinzel Decorative',serif;font-size:1rem;color:var(--ink);}
+.sheet-spell-item{display:inline-block;background:rgba(139,26,26,.06);border:1px solid rgba(139,26,26,.15);border-radius:2px;padding:.15rem .5rem;font-size:.85rem;margin:.15rem .1rem;color:var(--ink-light);}
+.sheet-cantrip-item{background:rgba(0,100,150,.06);border-color:rgba(0,100,150,.2);}
+.download-row{display:flex;gap:1rem;justify-content:center;flex-wrap:wrap;margin-top:2rem;}
+
+/* LEVEL BADGE */
+.level-badge{display:inline-flex;align-items:center;gap:.4rem;background:rgba(201,168,76,.12);border:1px solid var(--gold-dark);border-radius:3px;padding:.3rem .8rem;font-family:'Cinzel',serif;font-size:.75rem;color:var(--gold);margin-bottom:1rem;}
+
+/* SPELL SLOT DISPLAY */
+.slot-display{display:flex;flex-wrap:wrap;gap:.5rem;margin-bottom:1.2rem;}
+.slot-pill{font-family:'Cinzel',serif;font-size:.65rem;letter-spacing:.08em;border:1px solid rgba(201,168,76,.35);border-radius:2px;padding:.25rem .7rem;color:var(--gold-light);background:rgba(201,168,76,.08);}
+
+@media(max-width:600px){
+  .options-grid{grid-template-columns:repeat(2,1fr);}
+  .sheet-stats-row{grid-template-columns:repeat(3,1fr);}
+  .sheet-grid{grid-template-columns:1fr;}
+  .sheet-boxes{grid-template-columns:repeat(2,1fr);}
+  .stats-preview{grid-template-columns:repeat(3,1fr);}
+  .panel{padding:1.5rem;}
+  h1{font-size:1.6rem;}
+  .level-grid{grid-template-columns:repeat(5,1fr);}
+  .spell-grid{grid-template-columns:1fr 1fr;}
+}
+@media print{
+  body{background:white!important;}
+  body::before{display:none;}
+  header,.progress-wrap,#wizard,.download-row{display:none!important;}
+  #sheet-wrap{display:block!important;}
+  .sheet{box-shadow:none;padding:1rem;}
+}
+</style>
+</head>
+<body>
+<div class="app">
+
+<header>
+  <p class="header-sub">Manual del Jugador 2024 · Edición Española</p>
+  <h1>Creador de<br><span>Personajes</span></h1>
+</header>
+
+<!-- PROGRESS BAR -->
+<div class="progress-wrap" id="progress-wrap">
+  <div class="progress-steps">
+    <div class="step active" id="s1"><div class="step-circle">1</div><div class="step-label">Nombre</div></div>
+    <div class="step" id="s2"><div class="step-circle">2</div><div class="step-label">Especie</div></div>
+    <div class="step" id="s3"><div class="step-circle">3</div><div class="step-label">Clase</div></div>
+    <div class="step" id="s4"><div class="step-circle">4</div><div class="step-label">Subclase</div></div>
+    <div class="step" id="s5"><div class="step-circle">5</div><div class="step-label">Trasfondo</div></div>
+    <div class="step" id="s6"><div class="step-circle">6</div><div class="step-label">Nivel</div></div>
+    <div class="step" id="s7"><div class="step-circle">7</div><div class="step-label">Hechizos</div></div>
+    <div class="step" id="s8"><div class="step-circle">8</div><div class="step-label">Ficha</div></div>
+  </div>
+</div>
+
+<!-- WIZARD -->
+<div id="wizard">
+
+  <!-- STEP 1: NAME -->
+  <div class="panel active" id="panel-1">
+    <p class="panel-step">Paso 1 de 7</p>
+    <h2>El Nombre del Héroe</h2>
+    <p class="panel-desc">El nombre es lo primero que recordarán de ti. Escríbelo o usa el generador para inspirarte.</p>
+    <div class="name-wrap">
+      <label for="char-name">Nombre del personaje</label>
+      <input type="text" id="char-name" placeholder="Ej: Araniel Vashtar, Durgin Piedrahierro…" maxlength="50">
+    </div>
+    <div style="margin-bottom:1.5rem;">
+      <div style="font-family:'Cinzel',serif;font-size:.65rem;letter-spacing:.2em;color:var(--gold);text-transform:uppercase;margin-bottom:.6rem;">Por estilo</div>
+      <div style="display:flex;gap:.5rem;flex-wrap:wrap;margin-bottom:1rem;">
+        <button class="btn btn-secondary btn-sm" onclick="randomName('epico')">⚔️ Épico</button>
+        <button class="btn btn-secondary btn-sm" onclick="randomName('comun')">🏠 Común</button>
+        <button class="btn btn-secondary btn-sm" onclick="randomName('oscuro')">🌑 Oscuro</button>
+      </div>
+      <div style="font-family:'Cinzel',serif;font-size:.65rem;letter-spacing:.2em;color:var(--gold);text-transform:uppercase;margin-bottom:.6rem;">Por especie</div>
+      <div style="display:flex;gap:.5rem;flex-wrap:wrap;margin-bottom:1rem;">
+        <button class="btn btn-secondary btn-sm" onclick="randomName('elfo')">🌿 Elfo</button>
+        <button class="btn btn-secondary btn-sm" onclick="randomName('enano')">⛏️ Enano</button>
+        <button class="btn btn-secondary btn-sm" onclick="randomName('humano')">⚔️ Humano</button>
+        <button class="btn btn-secondary btn-sm" onclick="randomName('mediano')">🍀 Mediano</button>
+        <button class="btn btn-secondary btn-sm" onclick="randomName('orco')">💪 Orco</button>
+        <button class="btn btn-secondary btn-sm" onclick="randomName('draconido')">🐉 Dracónido</button>
+        <button class="btn btn-secondary btn-sm" onclick="randomName('aasimar')">😇 Aasimar</button>
+        <button class="btn btn-secondary btn-sm" onclick="randomName('tiefling')">😈 Tiefling</button>
+        <button class="btn btn-secondary btn-sm" onclick="randomName('gnomo')">🔮 Gnomo</button>
+        <button class="btn btn-secondary btn-sm" onclick="randomName('goliat')">🏔️ Goliat</button>
+      </div>
+      <div style="font-family:'Cinzel',serif;font-size:.65rem;letter-spacing:.2em;color:var(--gold);text-transform:uppercase;margin-bottom:.6rem;">Por clase</div>
+      <div style="display:flex;gap:.5rem;flex-wrap:wrap;margin-bottom:1rem;">
+        <button class="btn btn-secondary btn-sm" onclick="randomName('guerrero')">🛡️ Guerrero</button>
+        <button class="btn btn-secondary btn-sm" onclick="randomName('mago')">📚 Mago</button>
+        <button class="btn btn-secondary btn-sm" onclick="randomName('picaro')">🗡️ Pícaro</button>
+        <button class="btn btn-secondary btn-sm" onclick="randomName('paladin')">✝️ Paladín</button>
+        <button class="btn btn-secondary btn-sm" onclick="randomName('brujo')">🌑 Brujo</button>
+        <button class="btn btn-secondary btn-sm" onclick="randomName('druida')">🌲 Druida</button>
+      </div>
+      <div style="font-family:'Cinzel',serif;font-size:.65rem;letter-spacing:.2em;color:var(--gold);text-transform:uppercase;margin-bottom:.6rem;">Por género</div>
+      <div style="display:flex;gap:.5rem;flex-wrap:wrap;">
+        <button class="btn btn-secondary btn-sm" onclick="randomName('masculino')">♂ Masculino</button>
+        <button class="btn btn-secondary btn-sm" onclick="randomName('femenino')">♀ Femenino</button>
+        <button class="btn btn-secondary btn-sm" onclick="randomName('neutro')">⚬ Neutro</button>
+        <button class="btn btn-secondary btn-sm" onclick="randomNameCombined()" style="border-color:var(--gold);color:var(--gold-light);">🎲 Nombre + apellido</button>
+      </div>
+    </div>
+    <div class="nav-row"><span></span><button class="btn btn-primary" onclick="goStep(2)">Siguiente →</button></div>
+  </div>
+
+  <!-- STEP 2: SPECIES -->
+  <div class="panel" id="panel-2">
+    <p class="panel-step">Paso 2 de 7</p>
+    <h2>Elige tu Especie</h2>
+    <p class="panel-desc">Tu especie define tu herencia, rasgos innatos y cómo te percibe el mundo.</p>
+    <div class="options-grid" id="species-grid"></div>
+    <div class="detail-box" id="species-detail"></div>
+    <div class="nav-row">
+      <button class="btn btn-secondary" onclick="goStep(1)">← Atrás</button>
+      <button class="btn btn-primary" id="btn2" onclick="goStep(3)" disabled>Siguiente →</button>
+    </div>
+  </div>
+
+  <!-- STEP 3: CLASS -->
+  <div class="panel" id="panel-3">
+    <p class="panel-step">Paso 3 de 7</p>
+    <h2>Elige tu Clase</h2>
+    <p class="panel-desc">Tu clase es tu vocación como aventurero: cómo te enfrentas al peligro y qué poderes canalizas.</p>
+    <div class="options-grid" id="class-grid"></div>
+    <div class="detail-box" id="class-detail"></div>
+    <div class="nav-row">
+      <button class="btn btn-secondary" onclick="goStep(2)">← Atrás</button>
+      <button class="btn btn-primary" id="btn3" onclick="goStep(4)" disabled>Siguiente →</button>
+    </div>
+  </div>
+
+  <!-- STEP 4: SUBCLASS -->
+  <div class="panel" id="panel-4">
+    <p class="panel-step">Paso 4 de 7</p>
+    <h2>Elige tu Subcategoría</h2>
+    <p class="panel-desc" id="subclass-intro">Cada clase ofrece cuatro especializaciones que definen tu identidad.</p>
+    <div class="options-grid" id="subclass-grid"></div>
+    <div class="detail-box" id="subclass-detail"></div>
+    <div class="nav-row">
+      <button class="btn btn-secondary" onclick="goStep(3)">← Atrás</button>
+      <button class="btn btn-primary" id="btn4" onclick="goStep(5)" disabled>Siguiente →</button>
+    </div>
+  </div>
+
+  <!-- STEP 5: BACKGROUND -->
+  <div class="panel" id="panel-5">
+    <p class="panel-step">Paso 5 de 7</p>
+    <h2>Elige tu Trasfondo</h2>
+    <p class="panel-desc">Tu trasfondo cuenta de dónde vienes y otorga competencias, una dote y ajustes de características.</p>
+    <div class="options-grid" id="bg-grid"></div>
+    <div class="detail-box" id="bg-detail"></div>
+    <div class="nav-row">
+      <button class="btn btn-secondary" onclick="goStep(4)">← Atrás</button>
+      <button class="btn btn-primary" id="btn5" onclick="goStep(6)" disabled>Siguiente →</button>
+    </div>
+  </div>
+
+  <!-- STEP 6: LEVEL -->
+  <div class="panel" id="panel-6">
+    <p class="panel-step">Paso 6 de 7</p>
+    <h2>Elige tu Nivel</h2>
+    <p class="panel-desc">El nivel determina tus puntos de golpe, bonificador de competencia, ataques adicionales y espacios de conjuro disponibles.</p>
+    <div class="tier-labels">
+      <div class="tier-label" style="background:rgba(109,200,109,.1);color:#6dc86d;border:1px solid rgba(109,200,109,.3);">Nv. 1–4 · Aprendiz</div>
+      <div class="tier-label" style="background:rgba(100,150,255,.1);color:#6496ff;border:1px solid rgba(100,150,255,.3);">Nv. 5–10 · Aventurero</div>
+      <div class="tier-label" style="background:rgba(200,100,255,.1);color:#c864ff;border:1px solid rgba(200,100,255,.3);">Nv. 11–16 · Héroe</div>
+      <div class="tier-label" style="background:rgba(255,150,50,.1);color:#ff9632;border:1px solid rgba(255,150,50,.3);">Nv. 17–20 · Leyenda</div>
+    </div>
+    <div class="level-grid" id="level-grid"></div>
+    <div class="detail-box visible" id="level-detail" style="display:block;">
+      <div class="detail-title" id="lvl-title">Nivel 1 — Aprendiz</div>
+      <div id="lvl-info" class="detail-body"></div>
+    </div>
+    <div class="nav-row">
+      <button class="btn btn-secondary" onclick="goStep(5)">← Atrás</button>
+      <button class="btn btn-primary" id="btn6" onclick="goToSpells()">Siguiente →</button>
+    </div>
+  </div>
+
+  <!-- STEP 7: SPELLS -->
+  <div class="panel" id="panel-7">
+    <p class="panel-step">Paso 7 de 7</p>
+    <h2>Hechizos y Trucos</h2>
+    <p class="panel-desc" id="spell-intro">Elige tus conjuros preparados y trucos para este nivel.</p>
+    <div id="spell-panel"></div>
+    <div class="nav-row">
+      <button class="btn btn-secondary" onclick="goStep(6)">← Atrás</button>
+      <button class="btn btn-primary" onclick="showSheet()">✦ Generar Ficha</button>
+    </div>
+  </div>
+
+</div><!-- /wizard -->
+
+<!-- CHARACTER SHEET -->
+<div id="sheet-wrap">
+  <div style="text-align:center;color:var(--gold-dark);margin:.8rem 0;opacity:.5;">✦ ✦ ✦</div>
+  <div class="sheet" id="sheet"></div>
+  <div class="download-row">
+    <button class="btn btn-primary" onclick="window.print()">🖨️ Imprimir / Guardar PDF</button>
+    <button class="btn btn-secondary" onclick="resetAll()">⚔ Nuevo personaje</button>
+  </div>
+</div>
+
+</div><!-- /app -->
+
+<script>
+
+// ═══════════════════════════════════════════════════════
+//  SPECIES
+// ═══════════════════════════════════════════════════════
+const SPECIES = [
+  {id:'aasimar',icon:'😇',name:'Aasimar',tag:'Celestial',desc:'Mortales con una chispa de los Planos Superiores.',size:'Mediano o Pequeño',speed:'9 m',type:'Humanoide',languages:['Común','Celestial'],traits:[{n:'Manos curativas',d:'Acción de magia: curas 1d4 × bonif. competencia PG a una criatura. Recarga descanso largo.'},{n:'Portador de luz',d:'Conoces el truco Luz (Carisma como aptitud).'},{n:'Resistencia celestial',d:'Resistencia al daño necrótico y radiante.'},{n:'Visión en la oscuridad',d:'Ves 18 m en oscuridad como si fuera luz tenue.'},{n:'Revelación celestial (nv. 3)',d:'Acción adicional: te transformas 1 min. Elige: Alas celestiales, Fulgor interior o Mortaja necrótica.'}]},
+  {id:'draconido',icon:'🐉',name:'Dracónido',tag:'Dracónico',desc:'Descendientes de dragones. Escamas, cuernos y ataque de aliento.',size:'Mediano',speed:'9 m',type:'Humanoide',languages:['Común','Dracónico'],traits:[{n:'Linaje dracónico',d:'Elige un tipo de dragón. Determina tu tipo de daño y el arma de aliento.'},{n:'Ataque de aliento',d:'Sustituye un ataque por un cono 4,5 m o línea 9 m. CD = 8+CON+comp. Daño: 1d10 (escala). Usos = bonif. comp.'},{n:'Resistencia al daño',d:'Resistencia al tipo de daño de tu linaje.'},{n:'Visión en la oscuridad',d:'Ves 18 m en oscuridad.'},{n:'Vuelo dracónico (nv. 5)',d:'Alas espectrales 10 min. 1 vez/descanso largo.'}]},
+  {id:'elfo',icon:'🌿',name:'Elfo',tag:'Feérico',desc:'Orejas puntiagudas, larga vida (~750 años), trance en lugar de sueño.',size:'Mediano',speed:'9 m',type:'Humanoide (elfo)',languages:['Común','Élfico'],traits:[{n:'Linaje feérico',d:'Ventaja en salvaciones vs. hechizado; magia no puede hacerte dormir.'},{n:'Sentidos agudos',d:'Competencia en Percepción.'},{n:'Trance',d:'4 h de meditación = 8 h de sueño. Eres consciente del entorno.'},{n:'Subtipo élfico',d:'Alto elfo (truco de mago + idioma), Elfo de los bosques (velocidad 10,5 m + sigilo en naturaleza) o Drow (visión 36 m + conjuros innatos oscuridad feérica/luz feérica).'}]},
+  {id:'enano',icon:'⛏️',name:'Enano',tag:'Resistente',desc:'Entre 1,2 y 1,5 m. Resistentes, artesanos, viven ~350 años.',size:'Mediano',speed:'9 m',type:'Humanoide',languages:['Común','Enano'],traits:[{n:'Visión en la oscuridad',d:'Ves 18 m en oscuridad.'},{n:'Resistencia enana',d:'Ventaja en salvaciones vs. veneno; resistencia al daño por veneno.'},{n:'Tenacidad enana',d:'Tus PG máximos aumentan en 1 por nivel de personaje.'},{n:'Competencia con herramientas',d:'Competencia con herramientas de artesano a elegir (calderero, cantero o herrero).'},{n:'Subtipo',d:'Enano de las colinas o Enano de las montañas (armaduras ligeras y medias).'}]},
+  {id:'gnomo',icon:'🔮',name:'Gnomo',tag:'Ingenioso',desc:'Entre 90 cm y 1,1 m. Curiosos, inventivos, viven ~500 años.',size:'Pequeño',speed:'9 m',type:'Humanoide',languages:['Común','Gnomo'],traits:[{n:'Astucia gnoma',d:'Ventaja en todas las salvaciones de INT, SAB y CAR contra magia.'},{n:'Subtipo',d:'Gnomo de las rocas (conocimiento mágico) o Gnomo de los bosques (comunicarse con animales pequeños).'}]},
+  {id:'goliat',icon:'🏔️',name:'Goliat',tag:'Colosal',desc:'Entre 2,1 y 2,7 m. Competitivos, con marcas pétreas en la piel.',size:'Mediano',speed:'9 m',type:'Humanoide (gigante)',languages:['Común','Gigante'],traits:[{n:'Forma de gigante de piedra',d:'Acción adicional: Rebufo de la tormenta de montaña (empuja 3 m), Golpe potente (1d10 adicional) o Resistencia poderosa (daño a la mitad). 1 vez/descanso corto.'},{n:'Portador de gigante',d:'Doble del límite normal de carga.'},{n:'Tamaño grande',d:'Puedes usar armas diseñadas para criaturas Grandes.'}]},
+  {id:'humano',icon:'⚔️',name:'Humano',tag:'Versátil',desc:'La especie más adaptable. Dote adicional desde el nivel 1.',size:'Mediano o Pequeño',speed:'9 m',type:'Humanoide',languages:['Común','uno adicional'],traits:[{n:'Dote de origen',d:'Obtienes una dote de origen adicional al crear el personaje.'},{n:'Talento heroico',d:'Competencia en una habilidad adicional de tu elección.'}]},
+  {id:'mediano',icon:'🍀',name:'Mediano',tag:'Afortunado',desc:'Entre 90 cm y 1,1 m. Valentía sorprendente, suerte innata.',size:'Pequeño',speed:'7,5 m',type:'Humanoide',languages:['Común','Mediano'],traits:[{n:'Valentía',d:'Ventaja en salvaciones para evitar o acabar con el estado asustado.'},{n:'Agilidad mediana',d:'Puedes moverte por el espacio de criaturas de tamaño mayor.'},{n:'Suerte',d:'Si sacas un 1 en un d20, puedes repetir el dado.'},{n:'Sigilo natural',d:'Puedes esconderte cuando te oscurece una criatura Grande o mayor.'}]},
+  {id:'orco',icon:'💪',name:'Orco',tag:'Implacable',desc:'Fuertes y resistentes. Resistencia implacable legendaria.',size:'Mediano',speed:'9 m',type:'Humanoide',languages:['Común','Orco'],traits:[{n:'Resistencia implacable',d:'Al caer a 0 PG, en cambio caes a 1 PG. 1 vez/descanso largo.'},{n:'Visión en la oscuridad',d:'Ves 18 m en oscuridad.'},{n:'Fortaleza agresiva',d:'Cuando atacas, puedes usar acción adicional para Empujar a una criatura.'}]},
+  {id:'tiefling',icon:'😈',name:'Tiefling',tag:'Infernal',desc:'Descendientes infernales. Resistencia al fuego, magia oscura.',size:'Mediano o Pequeño',speed:'9 m',type:'Humanoide',languages:['Común','Infernal'],traits:[{n:'Herencia infernal',d:'Elige un linaje infernal (Zariel, Glasya, Levistus, etc.) con conjuros innatos según nivel.'},{n:'Resistencia al fuego',d:'Resistencia al daño de fuego.'},{n:'Visión en la oscuridad',d:'Ves 18 m en oscuridad.'}]},
+];
+
+// ═══════════════════════════════════════════════════════
+//  CLASSES
+// ═══════════════════════════════════════════════════════
+const CLASSES = [
+  {id:'barbaro',icon:'🪓',name:'Bárbaro',tag:'Furia',stat_main:'Fuerza',complejidad:'Media',dado_pg:'d12',pg_nv1:'12+CON',salvaciones:['Fuerza','Constitución'],armas:'Armas sencillas y marciales',armaduras_comp:'Ligeras, medias y escudos',habilidades_lista:['Atletismo','Intimidación','Naturaleza','Percepción','Supervivencia','Trato con animales'],desc:'Furia primigenia. Resistencia al daño, ventaja en Fuerza, poder demoledor cuerpo a cuerpo.',rasgos_nv1:[{n:'Furia',d:'Resistencia al daño contundente/cortante/perforante; ventaja en pruebas de FUE; daño adicional. No puedes concentrarte ni lanzar conjuros.'},{n:'Defensa sin armadura',d:'Sin armadura: CA = 10 + mod DES + mod CON.'},{n:'Maestría con armas',d:'Usa propiedades de maestría con 2 armas cuerpo a cuerpo.'}],equipo:[['Hacha a dos manos, 4 hachas de mano, paquete de explorador, 15 po','75 po']],usa_magia:false},
+  {id:'bardo',icon:'🎵',name:'Bardo',tag:'Magia·Social',stat_main:'Carisma',complejidad:'Alta',dado_pg:'d8',pg_nv1:'8+CON',salvaciones:['Destreza','Carisma'],armas:'Armas sencillas, ballesta de mano, espada corta, espada larga, estoque',armaduras_comp:'Ligeras',habilidades_lista:['Cualquier habilidad (elige 3)'],desc:'Arte, música y magia. Inspiración bárdica, lista de conjuros versátil.',rasgos_nv1:[{n:'Lanzamiento de conjuros',d:'Aptitud: CAR. Trucos: 2. Conjuros preparados: 4. Espacios nv.1: 2.'},{n:'Inspiración bárdica',d:'Acción adicional: das un dado de Inspiración (d6) a un aliado. Usos = mod CAR.'}],equipo:[['Estoque o espada larga, paquete de diplomático, laúd, cuero, 26 po','100 po']],usa_magia:true,aptitud:'CAR',trucos_inicio:2,conjuros_inicio:4},
+  {id:'brujo',icon:'🌑',name:'Brujo',tag:'Pacto·Ocultismo',stat_main:'Carisma',complejidad:'Alta',dado_pg:'d8',pg_nv1:'8+CON',salvaciones:['Sabiduría','Carisma'],armas:'Armas sencillas',armaduras_comp:'Ligeras',habilidades_lista:['Historia','Engaño','Naturaleza','Conocimiento arcano','Perspicacia','Investigación','Intimidación','Religión'],desc:'Poder de un patrón sobrenatural. Espacios que se recuperan en descanso corto.',rasgos_nv1:[{n:'Magia del pacto',d:'Aptitud: CAR. Trucos: 2. Conjuros preparados: 2. Espacios nv.1: 1 (recarga descanso corto).'},{n:'Invocaciones sobrenaturales',d:'Aprende invocaciones que potencian tu magia del pacto. Comienzas con 1.'}],equipo:[['Arma sencilla, paquete de erudito, foco arcano, cuero, 15 po','100 po']],usa_magia:true,aptitud:'CAR',trucos_inicio:2,conjuros_inicio:2},
+  {id:'clerigo',icon:'⛪',name:'Clérigo',tag:'Divino·Curación',stat_main:'Sabiduría',complejidad:'Media',dado_pg:'d8',pg_nv1:'8+CON',salvaciones:['Sabiduría','Carisma'],armas:'Armas sencillas',armaduras_comp:'Ligeras, medias, escudos',habilidades_lista:['Historia','Medicina','Perspicacia','Persuasión','Religión'],desc:'Canal de poder divino. Curación, dominio sagrado y magia divina.',rasgos_nv1:[{n:'Lanzamiento de conjuros',d:'Aptitud: SAB. Trucos: 3. Conjuros preparados: SAB+nivel. Espacios nv.1: 2.'},{n:'Rasgo de dominio',d:'Tu dominio divino otorga competencias y poderes adicionales desde nv.1.'}],equipo:[['Maza o arma sencilla, escudo, símbolo sagrado, paquete de sacerdote, escama, 7 po','110 po']],usa_magia:true,aptitud:'SAB',trucos_inicio:3,conjuros_inicio:4},
+  {id:'druida',icon:'🌲',name:'Druida',tag:'Naturaleza·Magia',stat_main:'Sabiduría',complejidad:'Alta',dado_pg:'d8',pg_nv1:'8+CON',salvaciones:['Inteligencia','Sabiduría'],armas:'Garrotes, dagas, dardos, jabalinas, mazas, bastones, cimitarras, hoces, hondas, lanzas',armaduras_comp:'Ligeras, medias, escudos (no metálicos)',habilidades_lista:['Conocimiento arcano','Medicina','Naturaleza','Percepción','Perspicacia','Religión','Supervivencia','Trato con animales'],desc:'Forma salvaje y magia de la naturaleza.',rasgos_nv1:[{n:'Lanzamiento de conjuros',d:'Aptitud: SAB. Trucos: 2. Conjuros preparados: SAB+nivel. Espacios nv.1: 2.'},{n:'Forma salvaje',d:'Acción adicional: te transformas en un animal CR ≤ 1/4. 2 usos, recarga descanso corto.'}],equipo:[['Escudo de madera o arma sencilla, foco druídico, paquete de explorador, cuero, 9 po','50 po']],usa_magia:true,aptitud:'SAB',trucos_inicio:2,conjuros_inicio:4},
+  {id:'explorador',icon:'🏹',name:'Explorador',tag:'Supervivencia',stat_main:'Destreza / Sabiduría',complejidad:'Media',dado_pg:'d10',pg_nv1:'10+CON',salvaciones:['Fuerza','Destreza'],armas:'Armas sencillas y marciales',armaduras_comp:'Ligeras, medias, escudos',habilidades_lista:['Atletismo','Perspicacia','Investigación','Naturaleza','Percepción','Sigilo','Supervivencia','Trato con animales'],desc:'Destreza marcial, magia de la naturaleza y habilidades de exploración.',rasgos_nv1:[{n:'Presa predilecta',d:'Elige tipo de enemigo predilecto. Ventaja en tiradas de rastreo/recuerdo vs. ese tipo.'},{n:'Maestría con armas',d:'Usa propiedades de maestría con 2 armas de tu elección.'}],equipo:[['Espada larga o 2 hachas de mano, paquete de explorador, cota de escamas, espada corta, 15 po','150 po']],usa_magia:true,aptitud:'SAB',trucos_inicio:0,conjuros_inicio:2,empieza_nivel:2},
+  {id:'guerrero',icon:'🛡️',name:'Guerrero',tag:'Marcial',stat_main:'Fuerza o Destreza',complejidad:'Baja',dado_pg:'d10',pg_nv1:'10+CON',salvaciones:['Fuerza','Constitución'],armas:'Armas sencillas y marciales',armaduras_comp:'Todas las armaduras y escudos',habilidades_lista:['Acrobacias','Atletismo','Historia','Perspicacia','Intimidación','Percepción','Persuasión','Supervivencia'],desc:'Maestro de las armas. Segundo aliento, acción adicional, más ataques.',rasgos_nv1:[{n:'Maestría con armas',d:'Usa propiedades de maestría con 3 armas de tu elección.'},{n:'Segundo aliento',d:'Acción adicional: recuperas 1d10+nivel guerrero PG. 2 usos, recarga descanso corto.'},{n:'Estilo de combate',d:'Elige: Arquería, Defensa, Duelo, Gran arma, Protección o Dos armas.'}],equipo:[['Cota de malla o cuero+2 dagas, ballesta pesada o arma marcial+escudo, paquete de mazmorrero, 4 po','175 po']],usa_magia:false},
+  {id:'hechicero',icon:'✨',name:'Hechicero',tag:'Magia innata',stat_main:'Carisma',complejidad:'Alta',dado_pg:'d6',pg_nv1:'6+CON',salvaciones:['Constitución','Carisma'],armas:'Dagas, dardos, hondas, bastones, ballestas de mano',armaduras_comp:'Ninguna',habilidades_lista:['Conocimiento arcano','Engaño','Perspicacia','Intimidación','Persuasión','Religión'],desc:'Magia innata, puntos de hechicería y metamagia.',rasgos_nv1:[{n:'Lanzamiento de conjuros',d:'Aptitud: CAR. Trucos: 4. Conjuros conocidos: 2. Espacios nv.1: 2.'},{n:'Magia innata',d:'Tu origen otorga rasgos adicionales desde nv.1.'}],equipo:[['Ballesta de mano+20 virotes o 2 dagas, paquete de mazmorrero, foco arcano, 28 po','100 po']],usa_magia:true,aptitud:'CAR',trucos_inicio:4,conjuros_inicio:2},
+  {id:'mago',icon:'📚',name:'Mago',tag:'Arcano·Estudio',stat_main:'Inteligencia',complejidad:'Media',dado_pg:'d6',pg_nv1:'6+CON',salvaciones:['Inteligencia','Sabiduría'],armas:'Dagas, dardos, hondas, bastones, ballestas de mano',armaduras_comp:'Ninguna',habilidades_lista:['Historia','Conocimiento arcano','Perspicacia','Investigación','Medicina','Religión'],desc:'Lista de conjuros más amplia del juego. Libro de conjuros y Recuperación arcana.',rasgos_nv1:[{n:'Lanzamiento de conjuros',d:'Aptitud: INT. Trucos: 3. Conjuros en libro: 6. Preparados: INT+nivel. Espacios nv.1: 2.'},{n:'Libro de conjuros',d:'Copias conjuros en él; puedes añadir conjuros encontrados en aventuras.'},{n:'Recuperación arcana',d:'1 vez/día (desc. corto): recuperas espacios hasta mitad de tu nivel (mín. 1, no nv. 6+).'}],equipo:[['Bastón o daga, paquete de erudito, libro de conjuros, 5 po','110 po']],usa_magia:true,aptitud:'INT',trucos_inicio:3,conjuros_inicio:6},
+  {id:'monje',icon:'👊',name:'Monje',tag:'Artes marciales',stat_main:'Destreza / Sabiduría',complejidad:'Alta',dado_pg:'d8',pg_nv1:'8+CON',salvaciones:['Fuerza','Destreza'],armas:'Armas sencillas y espadas cortas',armaduras_comp:'Ninguna',habilidades_lista:['Acrobacias','Atletismo','Historia','Perspicacia','Religión','Sigilo'],desc:'Artes marciales y ki. Sin armadura, ataques rápidos y gran movilidad.',rasgos_nv1:[{n:'Artes marciales',d:'Ataques sin armas o de monje usan d6. Puedes usar DES en su lugar. Ataque adicional sin arma como acción adicional.'},{n:'Defensa sin armadura',d:'Sin armadura: CA = 10 + mod DES + mod SAB.'}],equipo:[['Espada corta o arma sencilla, paquete de mazmorrero, 11 po','65 po']],usa_magia:false},
+  {id:'paladin',icon:'✝️',name:'Paladín',tag:'Divino·Marcial',stat_main:'Fuerza / Carisma',complejidad:'Media',dado_pg:'d10',pg_nv1:'10+CON',salvaciones:['Sabiduría','Carisma'],armas:'Armas sencillas y marciales',armaduras_comp:'Todas las armaduras y escudos',habilidades_lista:['Atletismo','Historia','Perspicacia','Intimidación','Medicina','Persuasión','Religión'],desc:'Guerrero sagrado. Imposición de manos, smite divino y conjuros.',rasgos_nv1:[{n:'Imposición de manos',d:'Piscina de curación = nivel × 5 PG. Como acción, curas o eliminas enfermedades/venenos.'},{n:'Maestría con armas',d:'Usa propiedades de maestría con 2 armas de tu elección.'}],equipo:[['Arma marcial+escudo o 2 armas marciales, 5 jabalinas, paquete de sacerdote, cota de malla, símbolo sagrado, 9 po','150 po']],usa_magia:true,aptitud:'CAR',trucos_inicio:0,conjuros_inicio:2,empieza_nivel:2},
+  {id:'picaro',icon:'🗡️',name:'Pícaro',tag:'Sigilo·Precisión',stat_main:'Destreza',complejidad:'Baja',dado_pg:'d8',pg_nv1:'8+CON',salvaciones:['Destreza','Inteligencia'],armas:'Armas sencillas, ballesta de mano, espada larga, estoque, espada corta',armaduras_comp:'Ligeras',habilidades_lista:['Acrobacias','Atletismo','Engaño','Historia','Perspicacia','Intimidación','Investigación','Percepción','Actuación','Persuasión','Juego de manos','Sigilo'],desc:'Ataque furtivo, Esquiva ágil y Pericia para dominar habilidades.',rasgos_nv1:[{n:'Pericia',d:'Elige 2 habilidades (o 1+herramientas de ladrón): duplicas el bonificador de competencia.'},{n:'Ataque furtivo',d:'1 vez/turno, con ventaja o aliado adyacente: 1d6 daño adicional (escala).'},{n:'Jerga de ladrones',d:'Conoces la jerga secreta de ladrones.'}],equipo:[['Estoque+daga o 2 dagas, ballesta de mano+20 virotes, herramientas de ladrón, paquete de mazmorrero, cuero, 8 po','100 po']],usa_magia:false},
+];
+
+const SUBCLASSES = {
+  barbaro:[{n:'Senda del Árbol del Mundo',icon:'🌳',d:'Conectas con los árboles cósmicos. Puedes moverte entre árboles, canalizar vitalidad cósmica y hablar con plantas.'},{n:'Senda del Berserker',icon:'🔥',d:'Violencia pura. En furia puedes atacar como acción adicional y volverte Intimidante.'},{n:'Senda del Corazón Salvaje',icon:'🐺',d:'Tu espíritu animal guía la furia. Eliges una naturaleza animal que otorga velocidades o ataques especiales.'},{n:'Senda del Fanático',icon:'⚡',d:'Tu furia está consagrada a un dios. Conjuros de dominio divino y cólera divina.'}],
+  bardo:[{n:'Colegio de la Danza',icon:'💃',d:'Agilidad como arma. Atacas en acciones de movimiento y potencias aliados en danza.'},{n:'Colegio del Conocimiento',icon:'📜',d:'Bonificador de corte para reducir tiradas enemigas y más conjuros de cualquier lista.'},{n:'Colegio del Glamour',icon:'🌸',d:'Magia feérica seductora. Fascinas criaturas y creas un aura de majestad.'},{n:'Colegio del Valor',icon:'⚔️',d:'Bardo guerrero. Inspiración que mejora daño, armaduras medias y armas marciales.'}],
+  brujo:[{n:'Patrón Celestial',icon:'☀️',d:'Ser de luz. Conjuros de curación, curas con Magia del pacto y dado de curación.'},{n:'Patrón Feérico',icon:'🧚',d:'Ser feérico. Teletransporte, encantamientos y reducción de tamaño a enemigos.'},{n:'Patrón Infernal',icon:'👿',d:'Archidiablo. PG temporales al derrotar enemigos, conjuros de engaño y fuego.'},{n:'Patrón Primigenio',icon:'🌀',d:'Entidad de conocimiento prohibido. Telepatía, conjuros de detección y Libro de las sombras.'}],
+  clerigo:[{n:'Dominio de la Guerra',icon:'⚔️',d:'Dios de la batalla. Armaduras pesadas, armas marciales y golpe guiado como reacción.'},{n:'Dominio de la Luz',icon:'✨',d:'Dios solar. Conjuros de fuego y radiante, escudo lumínico y columna de fuego.'},{n:'Dominio de la Vida',icon:'💚',d:'Dios sanador. Conjuros de curación potenciados. El mejor curandero del juego.'},{n:'Dominio del Engaño',icon:'🃏',d:'Dios del engaño. Duplicado ilusorio, veneno, sigilo y sombras.'}],
+  druida:[{n:'Círculo de la Luna',icon:'🌕',d:'Forma salvaje como arma. Formas más poderosas y ataque en forma animal.'},{n:'Círculo de la Tierra',icon:'🌿',d:'Magia del entorno. Conjuros adicionales por terreno y recuperación de espacios.'},{n:'Círculo de las Estrellas',icon:'⭐',d:'Constelaciones. Forma estelar para combate o curación, y mapa estelar como foco.'},{n:'Círculo del Mar',icon:'🌊',d:'Tormenta y mareas. Nadas, respiras bajo agua y maldices enemigos con el océano.'}],
+  explorador:[{n:'Acechador en la Penumbra',icon:'🦇',d:'Cazador de la oscuridad. Visión superior, ataques adicionales en primera ronda.'},{n:'Cazador',icon:'🎯',d:'Versátil y letal. Asesino de hordas, Defensor o Cazador de colosos.'},{n:'Errante Feérico',icon:'🌺',d:'Entre mundos. Teletransporte, encantamientos feéricos y conjuros del bosque.'},{n:'Señor de las Bestias',icon:'🐻',d:'Compañero animal primigenio que lucha junto a ti.'}],
+  guerrero:[{n:'Caballero Arcano',icon:'🔮',d:'Guerrero-mago. Conjuros de mago (abjuración y evocación) y arma ligada mágicamente.'},{n:'Campeón',icon:'🏆',d:'Perfección física. Crítico con 19-20, segundo estilo de combate y proezas atléticas.'},{n:'Guerrero Psiónico',icon:'🧠',d:'Energía psiónica. Daño adicional, teletransporte táctico y escudo mental.'},{n:'Maestro del Combate',icon:'📋',d:'Maniobras tácticas con dados de superioridad. Empujar, derribar, desviar golpes.'}],
+  hechicero:[{n:'Hechicería Aberrante',icon:'👁️',d:'Magia del espacio lejano. Daño psiónico, telepatía y resistencia.'},{n:'Hechicería de Magia Salvaje',icon:'🎲',d:'Caos puro. Tabla de magia salvaje en cualquier momento.'},{n:'Hechicería Dracónica',icon:'🐲',d:'Sangre de dragón. PG adicionales, CA sin armadura y alas en nivel alto.'},{n:'Hechicería Mecánica',icon:'⚙️',d:'Fuerzas del orden cósmico. Retroceder tiempo en tiradas y conjuros de fuerza.'}],
+  mago:[{n:'Abjurador',icon:'🛡️',d:'El protector. Escudo mágico que absorbe daño y resistencia a conjuros.'},{n:'Adivino',icon:'🔮',d:'Ve el futuro. Dados de augurio para forzar tiradas altas o bajas.'},{n:'Evocador',icon:'💥',d:'El artillero. Tus conjuros de evocación dañan menos a aliados y se potencian.'},{n:'Ilusionista',icon:'🎭',d:'Maestro del engaño. Ilusiones gratuitas, semisustanciales y duplicados.'}],
+  monje:[{n:'Guerrero de la Mano Abierta',icon:'🤲',d:'Dominio sin armas. Derribas, empujas o limitas con Flurry. Quietud de la mente.'},{n:'Guerrero de la Misericordia',icon:'💊',d:'Sanar o dañar con el mismo toque. Medicina, perspicacia y agujas de ki.'},{n:'Guerrero de la Sombra',icon:'🌑',d:'Sombras como hogar. Teletransporte en oscuridad y ataques desde la penumbra.'},{n:'Guerrero de los Elementos',icon:'🌊',d:'Canaliza cuatro elementos. Ataques envueltos en fuego, agua, tierra o aire.'}],
+  paladin:[{n:'Juramento de Entrega',icon:'👼',d:'Emulas a los ángeles. Conjuros de curación y radiante; aura que da ventaja en salvaciones.'},{n:'Juramento de Gloria',icon:'⭐',d:'Heroísmo mortal. Inspiración de batalla y movimiento sin provocar ataques de oportunidad.'},{n:'Juramento de los Antiguos',icon:'🌿',d:'Preservar vida y alegría. Conjuros feéricos y aura de resistencia mágica.'},{n:'Juramento de Venganza',icon:'⚡',d:'Cazador implacable. Voto de enemistad para ventaja y persecución sin límite.'}],
+  picaro:[{n:'Asesino',icon:'☠️',d:'Crítico automático en sorpresa. Disfraces maestros e infiltración perfecta.'},{n:'Embaucador Arcano',icon:'🌀',d:'Ladrón mágico. Conjuros de mago (encantamiento e ilusión) y mano mágica mejorada.'},{n:'Ladrón',icon:'🔓',d:'Intruso supremo. Manos rápidas, escalar tumbado y usar objetos mágicos sin requisitos.'},{n:'Rebanaalmas',icon:'🧠',d:'Cuchillas psiónicas invisibles. Daño adicional, escudo mental y teletransporte táctico.'}],
+};
+
+const BACKGROUNDS = [
+  {id:'acolito',icon:'🕯️',name:'Acólito',tag:'Religioso',stats:['Inteligencia','Sabiduría','Carisma'],dote:'Iniciado en la magia (clérigo)',skills:['Perspicacia','Religión'],tool:'Suministros de calígrafo',desc:'Serviste en un templo. El contacto con lo divino marcó tu camino.',equipo:'Suministros de calígrafo, libro de escritura, ropa de viaje, símbolo sagrado, 10 po'},
+  {id:'animador',icon:'🎭',name:'Animador',tag:'Artista',stats:['Fuerza','Destreza','Carisma'],dote:'Músico',skills:['Acrobacias','Actuación'],tool:'Instrumento musical',desc:'Bailarín, acróbata o músico. Viviste para entretener a las masas.',equipo:'Instrumento musical, 2 disfraces, espejo, maquillaje, 15 po'},
+  {id:'artesano',icon:'⚒️',name:'Artesano',tag:'Gremio',stats:['Fuerza','Destreza','Inteligencia'],dote:'Habilidoso',skills:['Perspicacia','Persuasión'],tool:'Herramientas de artesano',desc:'Maestro de tu oficio. Las redes del gremio te abrieron puertas.',equipo:'Herramientas de artesano, carta del gremio, ropa de viaje, 15 po'},
+  {id:'campesino',icon:'🌾',name:'Campesino',tag:'Rural',stats:['Fuerza','Constitución','Sabiduría'],dote:'Duro',skills:['Naturaleza','Trato con animales'],tool:'Herramientas de carpintero',desc:'Criado en el campo. La vida sencilla te dio una resistencia excepcional.',equipo:'Hoz, herramientas de carpintero, pala, ropa de trabajo, 5 po'},
+  {id:'charlatan',icon:'🃏',name:'Charlatán',tag:'Embaucador',stats:['Destreza','Constitución','Carisma'],dote:'Habilidoso',skills:['Engaño','Juego de manos'],tool:'Kit de disfraz',desc:'Maestro de la labia. Siempre supiste qué quería escuchar la gente.',equipo:'Kit de disfraz, herramientas de falsificación, 15 po'},
+  {id:'criminal',icon:'🔐',name:'Criminal',tag:'Clandestino',stats:['Destreza','Constitución','Inteligencia'],dote:'Alerta',skills:['Engaño','Sigilo'],tool:'Herramientas de ladrón',desc:'Te buscabas la vida en los callejones. Aprendiste a sobrevivir.',equipo:'Herramientas de ladrón, traje oscuro, capucha, 15 po'},
+  {id:'ermitano',icon:'🏕️',name:'Ermitaño',tag:'Solitario',stats:['Constitución','Sabiduría','Carisma'],dote:'Sanador',skills:['Medicina','Religión'],tool:'Útiles de herborista',desc:'Vida en soledad. El silencio te enseñó más de lo que cualquier maestro pudo.',equipo:'Bastón, útiles de herborista, diario, aceite de lámpara, 5 po'},
+  {id:'erudito',icon:'📖',name:'Erudito',tag:'Académico',stats:['Constitución','Inteligencia','Sabiduría'],dote:'Iniciado en la magia (mago)',skills:['Conocimiento arcano','Historia'],tool:'Suministros de calígrafo',desc:'Años de estudio. Tus preguntas sobre el multiverso te llevaron más allá.',equipo:'Suministros de calígrafo, libro, 10 po'},
+  {id:'escriba',icon:'✒️',name:'Escriba',tag:'Archivero',stats:['Destreza','Inteligencia','Sabiduría'],dote:'Habilidoso',skills:['Conocimiento arcano','Historia'],tool:'Suministros de calígrafo',desc:'Copiaste textos para nobles y templos. En los márgenes hallaste secretos.',equipo:'Suministros de calígrafo, libro en blanco, 15 po'},
+  {id:'guardia',icon:'⚔️',name:'Guardia',tag:'Orden',stats:['Fuerza','Inteligencia','Sabiduría'],dote:'Alerta',skills:['Atletismo','Percepción'],tool:'Un tipo de juego',desc:'Protegiste murallas y rutas. Aprendiste que el peligro viene de donde menos se espera.',equipo:'Juego, lanza, símbolo de rango, ropa de viaje, 12 po'},
+  {id:'guia',icon:'🗺️',name:'Guía',tag:'Explorador',stats:['Destreza','Constitución','Sabiduría'],dote:'Maestro de la naturaleza',skills:['Atletismo','Supervivencia'],tool:'Herramientas de cartógrafo',desc:'Trazaste mapas de tierras ignotas. Conoces rutas que no figuran en ningún pergamino.',equipo:'Herramientas de cartógrafo, cuerda, brújula, ropa de montaña, 10 po'},
+  {id:'marinero',icon:'⚓',name:'Marinero',tag:'Mar',stats:['Fuerza','Destreza','Sabiduría'],dote:'Matón de taberna',skills:['Acrobacias','Percepción'],tool:'Herramientas de navegante',desc:'Surcaste mares tormentosos. El horizonte siempre esconde algo más.',equipo:'Herramientas de navegante, cuerda de 15 m, ropa de viaje, 20 po'},
+  {id:'noble',icon:'👑',name:'Noble',tag:'Aristocracia',stats:['Fuerza','Inteligencia','Carisma'],dote:'Habilidoso',skills:['Historia','Persuasión'],tool:'Un tipo de juego',desc:'Naciste en un linaje de poder. La educación y los contactos moldearon tu visión.',equipo:'Juego, perfume fino, ropa de calidad, sello familiar, 29 po'},
+  {id:'soldado',icon:'🪖',name:'Soldado',tag:'Veterano',stats:['Fuerza','Destreza','Constitución'],dote:'Atacante salvaje',skills:['Atletismo','Intimidación'],tool:'Un tipo de juego',desc:'Entrenado para la guerra. El campo de batalla te forjó.',equipo:'Juego, lanza, arco corto, 20 flechas, aljaba, útiles de sanador, ropa de viaje, 14 po'},
+  {id:'vagabundo',icon:'🎒',name:'Vagabundo',tag:'Callejero',stats:['Destreza','Sabiduría','Carisma'],dote:'Afortunado',skills:['Perspicacia','Sigilo'],tool:'Herramientas de ladrón',desc:'Creciste en las calles con ingenio. El destino tiene algo reservado para ti.',equipo:'Herramientas de ladrón, 2 dagas, bolsas, petate, ropa de viaje, 16 po'},
+];
+
+const CLASS_STATS = {
+  barbaro:{FUE:15,DES:13,CON:14,INT:10,SAB:12,CAR:8},bardo:{FUE:8,DES:14,CON:12,INT:13,SAB:10,CAR:15},
+  brujo:{FUE:8,DES:14,CON:13,INT:12,SAB:10,CAR:15},clerigo:{FUE:14,DES:8,CON:13,INT:10,SAB:15,CAR:12},
+  druida:{FUE:8,DES:12,CON:14,INT:13,SAB:15,CAR:10},explorador:{FUE:12,DES:15,CON:13,INT:8,SAB:14,CAR:10},
+  guerrero:{FUE:15,DES:14,CON:13,INT:8,SAB:10,CAR:12},hechicero:{FUE:10,DES:13,CON:14,INT:8,SAB:12,CAR:15},
+  mago:{FUE:8,DES:12,CON:13,INT:15,SAB:14,CAR:10},monje:{FUE:12,DES:15,CON:13,INT:10,SAB:14,CAR:8},
+  paladin:{FUE:15,DES:10,CON:13,INT:8,SAB:12,CAR:14},picaro:{FUE:12,DES:15,CON:13,INT:14,SAB:10,CAR:8},
+};
+
+// ═══════════════════════════════════════════════════════
+//  SPELL SLOTS PER LEVEL (full casters)
+// Brujo usa su propia tabla
+// ═══════════════════════════════════════════════════════
+const SPELL_SLOTS_FULL = {
+// [nv1,nv2,nv3,nv4,nv5,nv6,nv7,nv8,nv9]
+  1:[2,0,0,0,0,0,0,0,0], 2:[3,0,0,0,0,0,0,0,0], 3:[4,2,0,0,0,0,0,0,0],
+  4:[4,3,0,0,0,0,0,0,0], 5:[4,3,2,0,0,0,0,0,0], 6:[4,3,3,0,0,0,0,0,0],
+  7:[4,3,3,1,0,0,0,0,0], 8:[4,3,3,2,0,0,0,0,0], 9:[4,3,3,3,1,0,0,0,0],
+  10:[4,3,3,3,2,0,0,0,0],11:[4,3,3,3,2,1,0,0,0],12:[4,3,3,3,2,1,0,0,0],
+  13:[4,3,3,3,2,1,1,0,0],14:[4,3,3,3,2,1,1,0,0],15:[4,3,3,3,2,1,1,1,0],
+  16:[4,3,3,3,2,1,1,1,0],17:[4,3,3,3,2,1,1,1,1],18:[4,3,3,3,3,1,1,1,1],
+  19:[4,3,3,3,3,2,1,1,1],20:[4,3,3,3,3,2,2,1,1],
+};
+const SPELL_SLOTS_HALF = { // Explorador y Paladín (a partir de nv 2)
+  1:[0,0,0,0,0,0,0,0,0],2:[2,0,0,0,0,0,0,0,0],3:[3,0,0,0,0,0,0,0,0],
+  4:[3,0,0,0,0,0,0,0,0],5:[4,2,0,0,0,0,0,0,0],6:[4,2,0,0,0,0,0,0,0],
+  7:[4,3,0,0,0,0,0,0,0],8:[4,3,0,0,0,0,0,0,0],9:[4,3,2,0,0,0,0,0,0],
+  10:[4,3,2,0,0,0,0,0,0],11:[4,3,3,0,0,0,0,0,0],12:[4,3,3,0,0,0,0,0,0],
+  13:[4,3,3,1,0,0,0,0,0],14:[4,3,3,1,0,0,0,0,0],15:[4,3,3,2,0,0,0,0,0],
+  16:[4,3,3,2,0,0,0,0,0],17:[4,3,3,3,1,0,0,0,0],18:[4,3,3,3,1,0,0,0,0],
+  19:[4,3,3,3,2,0,0,0,0],20:[4,3,3,3,2,0,0,0,0],
+};
+const SPELL_SLOTS_WARLOCK = { // Brujo: todos de mismo nivel
+  1:{slots:1,nivel:1},2:{slots:2,nivel:1},3:{slots:2,nivel:2},4:{slots:2,nivel:2},
+  5:{slots:2,nivel:3},6:{slots:2,nivel:3},7:{slots:2,nivel:4},8:{slots:2,nivel:4},
+  9:{slots:2,nivel:5},10:{slots:2,nivel:5},11:{slots:3,nivel:5},12:{slots:3,nivel:5},
+  13:{slots:3,nivel:5},14:{slots:3,nivel:5},15:{slots:3,nivel:5},16:{slots:3,nivel:5},
+  17:{slots:4,nivel:5},18:{slots:4,nivel:5},19:{slots:4,nivel:5},20:{slots:4,nivel:5},
+};
+
+// Trucos y conjuros disponibles por clase
+const SPELLS = {
+  bardo:{
+    trucos:[
+      {n:'Amigos',e:'Enc',d:'1 min de ventaja en pruebas de CAR vs. una criatura no hostil.'},
+      {n:'Ilusión menor',e:'Ilu',d:'Creas un sonido o imagen ilusoria durante 1 min.'},
+      {n:'Mensaje',e:'Tra',d:'Susurras un mensaje a una criatura hasta 36 m; puede responder.'},
+      {n:'Taumaturgia menor',e:'Ilu',d:'Pequeño truco mágico de entretenimiento.'},
+      {n:'Luz',e:'Evo',d:'Objeto toca do emite luz brillante 6 m, tenue otros 6 m. 1 h.'},
+      {n:'Trucos de manos',e:'Tra',d:'Pequeños trucos mágicos: calentar, limpiar o enfriar.'},
+      {n:'Palabra viciosa',e:'Enc',d:'Insulto mágico: tirada CAR o 1d4 daño psíquico y desventaja.'},
+      {n:'Provocar',e:'Enc',d:'La criatura debe superar SAB o solo puede atacarte a ti (concentración).'},
+    ],
+    nv1:[
+      {n:'Curar heridas',e:'Evo',d:'Tocas una criatura y recupera 2d8+mod PG.'},
+      {n:'Detectar magia',e:'Div',d:'Percibes magia en 9 m durante 10 min (concentración).'},
+      {n:'Dormir',e:'Enc',d:'Hace dormir a criaturas con menos de 5d8 PG (área).'},
+      {n:'Hechizar persona',e:'Enc',d:'Una humanoide te trata como amigo (SAB anula). Concentración 1 h.'},
+      {n:'Heroísmo',e:'Enc',d:'La criatura gana inmunidad al miedo y PG temporales. Concentración.'},
+      {n:'Imagen silenciosa',e:'Ilu',d:'Creas una imagen ilusoria de objeto/criatura/fenómeno (conc).'},
+      {n:'Palabra de curación',e:'Evo',d:'Acción adicional: criatura recupera 1d4+mod PG (rango 18 m).'},
+      {n:'Risa horrible de Tasha',e:'Enc',d:'Criatura ríe sin control y queda tumbada (SAB anula, conc).'},
+      {n:'Estupidez',e:'Enc',d:'Objetivo tiene desventaja en INT y no puede lanzar conjuros (conc).'},
+      {n:'Comprensión de idiomas',e:'Div',d:'Entiendes cualquier idioma hablado o escrito durante 1 h.'},
+    ],
+    nv2:[
+      {n:'Invisibilidad',e:'Ilu',d:'Tú o una criatura se vuelven invisibles durante 1 h (conc).'},
+      {n:'Silencio',e:'Ilu',d:'Zona de silencio de 6 m durante 10 min (conc).'},
+      {n:'Imagen mayor',e:'Ilu',d:'Ilusión con sonido, temperatura y olfato (conc 10 min).'},
+      {n:'Miedo',e:'Ilu',d:'Criaturas en cono aterradas y huyen (SAB anula, conc).'},
+      {n:'Sugestión',e:'Enc',d:'Sugieres un plan de acción a una criatura (SAB anula, conc 8 h).'},
+      {n:'Restauración menor',e:'Evo',d:'Eliminas una enfermedad o condición (cegado, paralizado…).'},
+      {n:'Nube de confusión',e:'Enc',d:'Distrae e impone desventaja a concentración enemiga.'},
+      {n:'Detectar pensamientos',e:'Div',d:'Lees los pensamientos superficiales (SAB anula, conc 1 min).'},
+    ],
+    nv3:[
+      {n:'Disipar magia',e:'Abj',d:'Termina un conjuro en una criatura, objeto o área.'},
+      {n:'Hipnótico aura',e:'Ilu',d:'Crea un espectáculo hipnótico; criaturas hechizadas y paralizadas.'},
+      {n:'Inmovilizar persona',e:'Enc',d:'Paraliza a un humanoide (SAB anula, conc 1 min).'},
+      {n:'Lenguas',e:'Div',d:'Criatura comprende y habla cualquier idioma durante 1 h.'},
+      {n:'Crear festín de héroes',e:'Con',d:'Creas un banquete que cura y da bonificadores (requiere 10 min).'},
+      {n:'Hablar con los muertos',e:'Nec',d:'Haces preguntas a un cadáver (máx. 5).'},
+    ],
+    nv4:[
+      {n:'Confusión',e:'Enc',d:'Criaturas en radio 3 m actúan aleatoriamente (SAB anula, conc).'},
+      {n:'Puerta dimensional',e:'Con',d:'Te teleportas hasta 500 m a un lugar que puedas ver.'},
+      {n:'Polimorfismo',e:'Tra',d:'Transformas a una criatura en otra (SAB anula, conc 1 h).'},
+      {n:'Fuerza fantasmal',e:'Ilu',d:'Creas una ilusión que la víctima cree real (INT anula, conc).'},
+    ],
+    nv5:[
+      {n:'Dominar persona',e:'Enc',d:'Controlas a un humanoide (SAB anula, conc 1 min).'},
+      {n:'Geas',e:'Enc',d:'Ordenas a criatura que lleve a cabo un servicio (SAB anula, 30 días).'},
+      {n:'Telepatía',e:'Div',d:'Comunicación telepática con una criatura durante 24 h.'},
+    ],
+  },
+  clerigo:{
+    trucos:[
+      {n:'Guía',e:'Div',d:'Criatura añade 1d4 a una prueba de característica (conc 1 min).'},
+      {n:'Luz',e:'Evo',d:'Objeto emite luz brillante 6 m, tenue otros 6 m. 1 h.'},
+      {n:'Llama sagrada',e:'Evo',d:'Llama de 18 m: DES o 1d8 daño radiante. No importa cobertura.'},
+      {n:'Resistencia',e:'Abj',d:'Criatura añade 1d4 a una tirada de salvación (conc 1 min).'},
+      {n:'Consejo',e:'Div',d:'Recibes un presagio de tu deidad sobre una acción futura.'},
+      {n:'Palabra de curación menor',e:'Evo',d:'Curas 1 PG a una criatura cercana (acción adicional).'},
+      {n:'Estabilizar',e:'Abj',d:'Estabilizas a una criatura con 0 PG sin gasto de espacio.'},
+      {n:'Aguante',e:'Evo',d:'Una criatura obtiene 1d4 PG temporales (conc 1 min).'},
+    ],
+    nv1:[
+      {n:'Curar heridas',e:'Evo',d:'Toca: la criatura recupera 2d8+mod PG.'},
+      {n:'Palabra de curación',e:'Evo',d:'Acción adicional: 18 m, 1d4+mod PG.'},
+      {n:'Escudo de fe',e:'Abj',d:'+2 CA a una criatura (conc 10 min).'},
+      {n:'Bendición',e:'Enc',d:'3 criaturas añaden 1d4 a ataques y salvaciones (conc 1 min).'},
+      {n:'Detectar magia',e:'Div',d:'Percibes magia en 9 m (conc 10 min).'},
+      {n:'Detectar el mal y el bien',e:'Div',d:'Sabes si hay aberraciones, celestiales, etc. (conc 10 min).'},
+      {n:'Protección contra el bien y el mal',e:'Abj',d:'Protege contra ciertas criaturas (conc 10 min).'},
+      {n:'Guía divina',e:'Div',d:'Criatura suma 1d4 a su próximo ataque, salvación o prueba.'},
+      {n:'Infligir heridas',e:'Nec',d:'Toque: 3d10 daño necrótico (CON anula la mitad).'},
+      {n:'Santuario',e:'Abj',d:'Los que ataquen al objetivo hacen tirada SAB o eligen otro blanco.'},
+    ],
+    nv2:[
+      {n:'Restauración menor',e:'Evo',d:'Elimina una enfermedad o condición.'},
+      {n:'Silencio',e:'Ilu',d:'Zona de silencio 6 m durante 10 min (conc).'},
+      {n:'Arma espiritual',e:'Evo',d:'Creas un arma espectral flotante que ataca por acción adicional.'},
+      {n:'Mantener a raya a los muertos',e:'Nec',d:'Muertos vivientes SAB o huyen/quedan detenidos (conc 1 min).'},
+      {n:'Localizar objeto',e:'Div',d:'Encuentras un objeto conocido en 300 m (conc 10 min).'},
+      {n:'Pasapor',e:'Con',d:'Creas una puerta portátil que puede conectar dos puertas.'},
+    ],
+    nv3:[
+      {n:'Disipar magia',e:'Abj',d:'Termina un conjuro activo.'},
+      {n:'Curación masiva de heridas',e:'Evo',d:'6 criaturas en 9 m recuperan 3d8+mod PG.'},
+      {n:'Revivificar',e:'Nec',d:'Resucitas a una criatura muerta hace <1 minuto (gasta 1 GEM de rubí).'},
+      {n:'Luz del día',e:'Evo',d:'Una esfera de 18 m de luz brillante durante 1 h.'},
+      {n:'Hablar con los muertos',e:'Nec',d:'Haces preguntas a un cadáver (máx. 5).'},
+      {n:'Círculo mágico',e:'Abj',d:'Crea un cilindro que impide la entrada de ciertas criaturas.'},
+    ],
+    nv4:[
+      {n:'Guardián de la fe',e:'Con',d:'Espíritu guardián ataca intrusos (RAD 2d10 o DES la mitad).'},
+      {n:'Libertad de movimiento',e:'Abj',d:'La criatura ignora terreno difícil y encadenamiento mágico.'},
+      {n:'Adivinación',e:'Div',d:'Recibes un presagio sobre un objetivo futuro (rituable).'},
+    ],
+    nv5:[
+      {n:'Curación mayor',e:'Evo',d:'Una criatura recupera 8d8+mod PG (o 4d8+mod con acción adicional).'},
+      {n:'Resurrección verdadera',e:'Nec',d:'Resucitas a una criatura muerta hace ≤100 años.'},
+      {n:'Plaga de insectos',e:'Con',d:'Nube de insectos 6 m radio: 4d10 daño perforante por ronda.'},
+    ],
+  },
+  druida:{
+    trucos:[
+      {n:'Guía',e:'Div',d:'1d4 a una prueba de característica (conc 1 min).'},
+      {n:'Producir llama',e:'Con',d:'Llama en mano: +1d8 daño/nivel. También como proyectil (18 m).'},
+      {n:'Resistencia',e:'Abj',d:'1d4 a una salvación (conc 1 min).'},
+      {n:'Druidcraft',e:'Tra',d:'Pequeños efectos de la naturaleza: predice tiempo, crea sonidos.'},
+      {n:'Forma de estrella',e:'Tra',d:'Tocas una criatura que recupera 1d6+SAB PG (acción).'},
+      {n:'Veneno rayado',e:'Evo',d:'Rayo de veneno a 9 m: CON o 1d12 daño veneno (nv1 hasta nv17).'},
+      {n:'Molde tierra',e:'Tra',d:'Mueves y moldeas tierra no mágica en radio 9 m.'},
+      {n:'Ráfaga de trueno',e:'Evo',d:'Ráfaga 5 ft: 1d8 trueno y empuja 10 ft. (o variante).'},
+    ],
+    nv1:[
+      {n:'Curar heridas',e:'Evo',d:'Toca: 2d8+mod PG.'},
+      {n:'Zarzas enmarañadas',e:'Con',d:'Área 6 m radio: terreno difícil; criaturas atrapadas (STR anula, conc).'},
+      {n:'Calmar animales',e:'Enc',d:'Animales SAB o quedan amistosos (conc 1 min).'},
+      {n:'Salto',e:'Tra',d:'La velocidad de salto de la criatura se triplica durante 1 min.'},
+      {n:'Hablar con animales',e:'Div',d:'Hablas con bestias durante 10 min (ritual).'},
+      {n:'Crear o destruir agua',e:'Tra',d:'Crea o destruye hasta 40 litros de agua.'},
+      {n:'Detectar magia',e:'Div',d:'Percibes magia en 9 m (conc 10 min, ritual).'},
+      {n:'Viento favorable',e:'Evo',d:'Viento propulsa un barco a velocidad máxima (conc 8 h).'},
+    ],
+    nv2:[
+      {n:'Piel de árbol',e:'Tra',d:'La corteza endurece tu piel: CA mínima 16 (conc 10 min).'},
+      {n:'Pasar sin dejar rastro',e:'Abj',d:'+10 a pruebas de Sigilo; no puedes ser rastreado (conc 1 h).'},
+      {n:'Locura lunar',e:'Ilu',d:'Distorsionas la mente de una criatura (SAB anula, conc).'},
+      {n:'Localizar bestia o planta',e:'Div',d:'Sientes la dirección de un tipo específico de animal o planta.'},
+      {n:'Nube de niebla',e:'Con',d:'Esfera de niebla 6 m; todo en ella oscurecido (conc 1 h).'},
+      {n:'Florecimiento',e:'Evo',d:'Plantas irrumpen en área 3x3 m: terreno difícil permanente.'},
+    ],
+    nv3:[
+      {n:'Llamar relámpago',e:'Con',d:'Nube de tormenta; 3d10 relámpago a una criatura por turno (conc 10 min).'},
+      {n:'Viento de tormenta',e:'Evo',d:'Cilindro 9 m de viento: empuja criaturas y dificulta movimiento.'},
+      {n:'Revivir bestia',e:'Nec',d:'Devuelve la vida a una bestia muerta hace ≤1 h.'},
+      {n:'Muro de agua',e:'Con',d:'Crea un muro de agua (18 m largo, 5 m alto, conc 10 min).'},
+      {n:'Conjurar animales',e:'Con',d:'Invocas bestias con CR total ≤ tu nivel de conjurador (conc).'},
+    ],
+    nv4:[
+      {n:'Controlar agua',e:'Tra',d:'Controlas agua en cubo de 30 m: inundación, torbellino, etc.'},
+      {n:'Polimorfismo',e:'Tra',d:'Transformas una criatura en bestia (SAB anula, conc 1 h).'},
+      {n:'Libertad de movimiento',e:'Abj',d:'Ignora terreno difícil y encadenamiento mágico.'},
+    ],
+    nv5:[
+      {n:'Comunión con la naturaleza',e:'Div',d:'Obtienes información del terreno y sus moradores en 5 km.'},
+      {n:'Conjurar elemental',e:'Con',d:'Invocas un elemental de CR ≤ tu nivel de conjurador (conc 1 h).'},
+      {n:'Pasar a través de las plantas',e:'Tra',d:'Te teletransportas de una planta a otra a 90 m.'},
+    ],
+  },
+  hechicero:{
+    trucos:[
+      {n:'Descarga de fuego',e:'Evo',d:'Bola de fuego 18 m: 1d10 fuego (2d10 si criatura inflamable).'},
+      {n:'Rayo de escarcha',e:'Evo',d:'Rayo 18 m: 1d8 frío + velocidad -3 m hasta fin de su siguiente turno.'},
+      {n:'Descarga de ácido',e:'Con',d:'Proyectil 18 m: 1d8 ácido (DEX anula la mitad).'},
+      {n:'Prestidigitación',e:'Tra',d:'Trucos mágicos menores sin utilidad en combate.'},
+      {n:'Toque gélido',e:'Nec',d:'Mano espectral 36 m: 1d8 necrótico; no regenera PG hasta su próximo turno.'},
+      {n:'Rayo venenoso',e:'Con',d:'Proyectil 18 m: 1d12 veneno (CON la mitad).'},
+      {n:'Descarga de trueno',e:'Evo',d:'Onda trueno: 1d6 (empuja 10 ft si falla CON).'},
+      {n:'Chispa de fuego',e:'Evo',d:'Chispa a un objetivo: 1d6 fuego.'},
+    ],
+    nv1:[
+      {n:'Manos ardientes',e:'Evo',d:'Cono 4,5 m: 3d6 fuego (DES la mitad).'},
+      {n:'Escudo mágico',e:'Abj',d:'Reacción: +5 CA y anulas Dardos mágicos hasta inicio de tu turno.'},
+      {n:'Proyectil mágico',e:'Evo',d:'3 dardos de 1d4+1 fuerza; impacto garantizado.'},
+      {n:'Hechizar persona',e:'Enc',d:'Humanoide te trata como amigo (SAB anula, conc 1 h).'},
+      {n:'Dormir',e:'Enc',d:'Hace dormir criaturas con menos PG (5d8 área).'},
+      {n:'Ondas de trueno',e:'Evo',d:'Cubo 4,5 m: 2d8 trueno + empuja (CON la mitad).'},
+      {n:'Disfraz yo mismo',e:'Ilu',d:'Cambias tu apariencia durante 1 h.'},
+      {n:'Caída de pluma',e:'Tra',d:'Reacción: 5 criaturas caen a 18 m/r durante 1 min.'},
+    ],
+    nv2:[
+      {n:'Invisibilidad',e:'Ilu',d:'Invisible durante 1 h (conc); termina si atacas.'},
+      {n:'Nube de veneno',e:'Con',d:'Nube 3 m radio: 2d8 veneno por ronda (conc 1 min).'},
+      {n:'Bola de rayos',e:'Evo',d:'Concentras la tormenta en un rayo de 5d8 relámpago.'},
+      {n:'Sugestión',e:'Enc',d:'Sugieres acción de un párrafo (SAB anula, conc 8 h).'},
+      {n:'Flecha ácida de Melf',e:'Evo',d:'Proyectil + ácido adicional al final de su próximo turno.'},
+      {n:'Paso brumoso',e:'Con',d:'Teletransporte hasta 9 m (niebla plateada).'},
+    ],
+    nv3:[
+      {n:'Bola de fuego',e:'Evo',d:'Esfera radio 6 m: 8d6 fuego (DES la mitad).'},
+      {n:'Rayo relámpago',e:'Evo',d:'Línea 30 m: 8d6 relámpago (DES la mitad).'},
+      {n:'Disipar magia',e:'Abj',d:'Termina un conjuro activo (automático si nv ≤ tu nv de espacio).'},
+      {n:'Volar',e:'Tra',d:'Velocidad de vuelo 18 m durante 10 min (conc).'},
+      {n:'Contrahechizo',e:'Abj',d:'Reacción: interrumpes conjuro nv ≤ 3 (tirada INT si es mayor).'},
+    ],
+    nv4:[
+      {n:'Confusión',e:'Enc',d:'Criaturas en radio 3 m actúan aleatoriamente (SAB anula, conc).'},
+      {n:'Polimorfismo',e:'Tra',d:'Transforma a una criatura en bestia (SAB anula, conc 1 h).'},
+      {n:'Puerta dimensional',e:'Con',d:'Teletransporte hasta 500 m.'},
+      {n:'Destello de trueno',e:'Evo',d:'Rayo de luz cegadora en línea de 30 m.'},
+    ],
+    nv5:[
+      {n:'Cono de frío',e:'Evo',d:'Cono 18 m: 8d8 frío (CON la mitad).'},
+      {n:'Dominar persona',e:'Enc',d:'Controlas a un humanoide (SAB anula, conc 1 min).'},
+      {n:'Telekinesis',e:'Tra',d:'Mueves objetos o criaturas con la mente (conc 10 min).'},
+    ],
+  },
+  mago:{
+    trucos:[
+      {n:'Descarga de fuego',e:'Evo',d:'Bola de fuego 18 m: 1d10 fuego.'},
+      {n:'Rayo de escarcha',e:'Evo',d:'1d8 frío + velocidad -3 m.'},
+      {n:'Toque gélido',e:'Nec',d:'1d8 necrótico; no regenera PG.'},
+      {n:'Descarga de ácido',e:'Con',d:'1d8 ácido a 18 m.'},
+      {n:'Prestidigitación',e:'Tra',d:'Trucos mágicos menores variados.'},
+      {n:'Mano de mago',e:'Con',d:'Mano espectral que manipula objetos ligeros hasta 9 m.'},
+      {n:'Ilusión menor',e:'Ilu',d:'Creas un sonido o imagen ilusoria.'},
+      {n:'Luz',e:'Evo',d:'Objeto brilla: luz brillante 6 m, tenue 6 m más. 1 h.'},
+      {n:'Rayo de veneno',e:'Con',d:'1d12 veneno a 18 m.'},
+      {n:'Trucos de manos',e:'Tra',d:'Pequeños trucos: calentar, limpiar, enfriar.'},
+      {n:'Palabra de alarma',e:'Abj',d:'Alarma telepática o sonora cuando algo pasa por el área.'},
+      {n:'Forma cambiante',e:'Tra',d:'Cambias un rasgo físico menor de tu apariencia.'},
+    ],
+    nv1:[
+      {n:'Proyectil mágico',e:'Evo',d:'3 dardos de 1d4+1 fuerza; infalibles.'},
+      {n:'Manos ardientes',e:'Evo',d:'Cono 4,5 m: 3d6 fuego (DES la mitad).'},
+      {n:'Escudo mágico',e:'Abj',d:'Reacción: +5 CA y anulas Dardos mágicos.'},
+      {n:'Ondas de trueno',e:'Evo',d:'Cubo 4,5 m: 2d8 trueno + empuje.'},
+      {n:'Dormir',e:'Enc',d:'Hace dormir criaturas con pocos PG.'},
+      {n:'Hechizar persona',e:'Enc',d:'Humanoide amigable (SAB anula, conc 1 h).'},
+      {n:'Detectar magia',e:'Div',d:'Percibes magia en 9 m (ritual, conc 10 min).'},
+      {n:'Comprensión de idiomas',e:'Div',d:'Entiendes cualquier idioma 1 h (ritual).'},
+      {n:'Imagen silenciosa',e:'Ilu',d:'Ilusión visual de objeto/criatura (conc 10 min).'},
+      {n:'Disfrazarse',e:'Ilu',d:'Tu apariencia cambia durante 1 h.'},
+      {n:'Armadura de Mago',e:'Abj',d:'CA = 13+DES si no llevas armadura. 8 h.'},
+      {n:'Caída de pluma',e:'Tra',d:'Reacción: frenas caída de hasta 5 criaturas.'},
+    ],
+    nv2:[
+      {n:'Invisibilidad',e:'Ilu',d:'Invisible durante 1 h (conc).'},
+      {n:'Paso brumoso',e:'Con',d:'Teletransporte hasta 9 m.'},
+      {n:'Nube de veneno',e:'Con',d:'Nube 3 m: 2d8 veneno/turno (conc 1 min).'},
+      {n:'Bola de rayos',e:'Evo',d:'Rayo 5d8 relámpago concentrado.'},
+      {n:'Sugestión',e:'Enc',d:'Sugieres acción (SAB anula, conc 8 h).'},
+      {n:'Flecha ácida de Melf',e:'Evo',d:'Proyectil + ácido continuo.'},
+      {n:'Localizar objeto',e:'Div',d:'Hallas un objeto conocido en 300 m (conc 10 min).'},
+      {n:'Ver lo invisible',e:'Div',d:'Ves criaturas y objetos invisibles durante 1 h.'},
+    ],
+    nv3:[
+      {n:'Bola de fuego',e:'Evo',d:'Radio 6 m: 8d6 fuego (DES la mitad).'},
+      {n:'Rayo relámpago',e:'Evo',d:'Línea 30 m: 8d6 relámpago.'},
+      {n:'Disipar magia',e:'Abj',d:'Termina un conjuro activo.'},
+      {n:'Volar',e:'Tra',d:'Velocidad de vuelo 18 m (conc 10 min).'},
+      {n:'Contrahechizo',e:'Abj',d:'Reacción: interrumpe un conjuro.'},
+      {n:'Hipnótico aura',e:'Ilu',d:'Espectáculo hipnótico en área: hechizados y paralizados.'},
+    ],
+    nv4:[
+      {n:'Polimorfismo',e:'Tra',d:'Transforma criatura en bestia (conc 1 h).'},
+      {n:'Confusión',e:'Enc',d:'Criaturas actúan aleatoriamente (SAB anula, conc).'},
+      {n:'Puerta dimensional',e:'Con',d:'Teletransporte 500 m.'},
+      {n:'Fuerza fantasmal',e:'Ilu',d:'Ilusión que la víctima cree real (conc 1 min).'},
+      {n:'Destello de rayos',e:'Evo',d:'Cuatro rayos de relámpago.'},
+    ],
+    nv5:[
+      {n:'Cono de frío',e:'Evo',d:'Cono 18 m: 8d8 frío.'},
+      {n:'Muro de fuerza',e:'Evo',d:'Muro de fuerza invisible (10 min, conc).'},
+      {n:'Telekinesis',e:'Tra',d:'Mueves objetos o criaturas con la mente (conc 10 min).'},
+      {n:'Dominar persona',e:'Enc',d:'Controlas un humanoide (SAB anula, conc 1 min).'},
+    ],
+  },
+  brujo:{
+    trucos:[
+      {n:'Descarga sobrecogedora',e:'Evo',d:'Rayo de fuerza 18 m: 1d10 fuerza. El daño sube con nivel.'},
+      {n:'Mano de mago',e:'Con',d:'Mano espectral para manipular objetos hasta 9 m.'},
+      {n:'Toque gélido',e:'Nec',d:'1d8 necrótico; no regenera PG hasta su próximo turno.'},
+      {n:'Ilusión menor',e:'Ilu',d:'Creas sonido o imagen ilusoria.'},
+      {n:'Prestidigitación',e:'Tra',d:'Trucos mágicos menores sin utilidad en combate.'},
+      {n:'Palabra viciosa',e:'Enc',d:'Insulto mágico: CAR o 1d4 psíquico + desventaja en tirada.'},
+      {n:'Descarga de ácido',e:'Con',d:'1d8 ácido a 18 m.'},
+    ],
+    nv1:[
+      {n:'Armadura del Aghilar',e:'Abj',d:'CA = 13+DES si no llevas armadura (8 h).'},
+      {n:'Hechizar persona',e:'Enc',d:'Humanoide te trata como amigo (SAB anula, conc 1 h).'},
+      {n:'Oscuridad feérica',e:'Evo',d:'Oscuridad mágica de radio 4,5 m (conc 10 min).'},
+      {n:'Maldición del cazador',e:'Nec',d:'Marcas objetivo: +1d6 daño en ataques, ventaja en rastreo (conc 1 h).'},
+      {n:'Proyectil mágico',e:'Evo',d:'3 dardos de 1d4+1 fuerza; infalibles.'},
+      {n:'Miedo',e:'Ilu',d:'Criaturas en cono aterradas (SAB anula, conc 1 min).'},
+      {n:'Grasa',e:'Con',d:'Suelo resbaladizo: criaturas DEX o caen. Dura 1 min.'},
+    ],
+    nv2:[
+      {n:'Oscuridad',e:'Evo',d:'Esfera de oscuridad 4,5 m radio (conc 10 min).'},
+      {n:'Invisibilidad',e:'Ilu',d:'Invisible 1 h (conc).'},
+      {n:'Paso brumoso',e:'Con',d:'Teletransporte hasta 9 m.'},
+      {n:'Sugestión',e:'Enc',d:'Sugieres acción (SAB anula, conc 8 h).'},
+      {n:'Espejo de imágenes',e:'Ilu',d:'Creas 3 duplicados ilusorios que confunden a los atacantes.'},
+      {n:'Voz de barriga',e:'Ilu',d:'Lanzas tu voz sin mover los labios.'},
+    ],
+    nv3:[
+      {n:'Disipar magia',e:'Abj',d:'Termina un conjuro activo.'},
+      {n:'Volar',e:'Tra',d:'Velocidad de vuelo 18 m (conc 10 min).'},
+      {n:'Hipnótico aura',e:'Ilu',d:'Espectáculo hipnótico que paraliza criaturas.'},
+      {n:'Contrahechizo',e:'Abj',d:'Reacción: interrumpes un conjuro.'},
+      {n:'Lenguas',e:'Div',d:'Comprende y habla cualquier idioma 1 h.'},
+    ],
+    nv4:[
+      {n:'Polimorfismo',e:'Tra',d:'Transforma criatura (SAB anula, conc 1 h).'},
+      {n:'Puerta dimensional',e:'Con',d:'Teletransporte 500 m.'},
+      {n:'Destierro',e:'Abj',d:'Destierras una criatura a otro plano (CAR anula, conc 1 min).'},
+    ],
+    nv5:[
+      {n:'Dominar persona',e:'Enc',d:'Controlas un humanoide (SAB anula, conc 1 min).'},
+      {n:'Mente en blanco',e:'Enc',d:'Una criatura pierde todos sus recuerdos temporalmente.'},
+      {n:'Geas',e:'Enc',d:'Ordenas servicio durante 30 días (SAB anula).'},
+    ],
+  },
+  paladin:{
+    trucos:[],
+    nv1:[
+      {n:'Bendición',e:'Enc',d:'3 criaturas +1d4 en ataques y salvaciones (conc 1 min).'},
+      {n:'Curar heridas',e:'Evo',d:'Toca: 2d8+mod PG.'},
+      {n:'Detectar el mal y el bien',e:'Div',d:'Aberraciones, celestiales, etc. en 9 m (conc 10 min).'},
+      {n:'Detectar magia',e:'Div',d:'Percibes magia en 9 m (conc 10 min, ritual).'},
+      {n:'Escudo de fe',e:'Abj',d:'+2 CA a una criatura (conc 10 min).'},
+      {n:'Palabra de curación',e:'Evo',d:'Acción adicional: 1d4+mod PG a 18 m.'},
+      {n:'Marca del cazador',e:'Nec',d:'+1d6 daño y ventaja en rastreo (conc 1 h).'},
+      {n:'Protección contra el bien y el mal',e:'Abj',d:'Protege contra criaturas especiales (conc 10 min).'},
+      {n:'Purificar alimentos y bebidas',e:'Tra',d:'Purifica todo en radio 1,5 m.'},
+    ],
+    nv2:[
+      {n:'Restauración menor',e:'Evo',d:'Elimina una enfermedad o condición.'},
+      {n:'Arma mágica',e:'Tra',d:'Un arma no mágica se vuelve +1 (conc 1 h; +2 a nv. alto).'},
+      {n:'Localizar objeto',e:'Div',d:'Hallas un objeto en 300 m.'},
+      {n:'Silencio',e:'Ilu',d:'Zona de silencio 6 m durante 10 min (conc).'},
+      {n:'Zona de verdad',e:'Enc',d:'Las criaturas en esfera 4,5 m no pueden mentir (CAR anula).'},
+    ],
+    nv3:[
+      {n:'Disipar magia',e:'Abj',d:'Termina un conjuro activo.'},
+      {n:'Curación masiva de heridas',e:'Evo',d:'6 criaturas en 9 m: 3d8+mod PG.'},
+      {n:'Luz del día',e:'Evo',d:'Esfera 18 m de luz brillante durante 1 h.'},
+      {n:'Revivificar',e:'Nec',d:'Resucitas a criatura muerta hace < 1 minuto.'},
+    ],
+  },
+  explorador:{
+    trucos:[],
+    nv1:[
+      {n:'Curar heridas',e:'Evo',d:'Toca: 2d8+mod PG.'},
+      {n:'Detectar magia',e:'Div',d:'Percibes magia en 9 m (ritual, conc 10 min).'},
+      {n:'Salto',e:'Tra',d:'Triplica salto durante 1 min.'},
+      {n:'Calmar animales',e:'Enc',d:'Animales amigables (SAB anula, conc 1 min).'},
+      {n:'Hablar con animales',e:'Div',d:'Hablas con bestias 10 min (ritual).'},
+      {n:'Marca del cazador',e:'Nec',d:'+1d6 daño + ventaja en rastreo (conc 1 h).'},
+      {n:'Nube de niebla',e:'Con',d:'Esfera niebla 6 m (conc 1 h).'},
+      {n:'Zarzas enmarañadas',e:'Con',d:'Área 6 m: terreno difícil + atrapar criaturas.'},
+    ],
+    nv2:[
+      {n:'Pasar sin dejar rastro',e:'Abj',d:'+10 sigilo; no pueden rastrearte (conc 1 h).'},
+      {n:'Localizar bestia o planta',e:'Div',d:'Sientes dirección de un tipo concreto.'},
+      {n:'Nube de veneno',e:'Con',d:'Nube 3 m: 2d8 veneno (conc 1 min).'},
+      {n:'Piel de árbol',e:'Tra',d:'CA mínima 16 (conc 10 min).'},
+      {n:'Aguzar sentidos',e:'Div',d:'Visión en la oscuridad 18 m y ventaja en Percepción (8 h).'},
+    ],
+    nv3:[
+      {n:'Conjurar animales',e:'Con',d:'Invocas bestias con CR total ≤ nivel (conc 1 h).'},
+      {n:'Llamar relámpago',e:'Con',d:'3d10 relámpago por turno (conc 10 min).'},
+      {n:'Viento de tormenta',e:'Evo',d:'Cilindro de viento: empuja criaturas (conc 1 min).'},
+    ],
+  },
+};
+
+// ═══════════════════════════════════════════════════════
+//  STATE
+// ═══════════════════════════════════════════════════════
+const S = {step:1,name:'',species:null,cls:null,subclass:null,bg:null,level:1,cantrips:[],spells:[]};
+
+// ═══════════════════════════════════════════════════════
+//  INIT
+// ═══════════════════════════════════════════════════════
+window.onload = () => {
+  buildGrid('species-grid',SPECIES,'species','btn2');
+  buildGrid('class-grid',CLASSES,'cls','btn3');
+  buildGrid('bg-grid',BACKGROUNDS,'bg','btn5');
+  buildLevelGrid();
+};
+
+function buildGrid(containerId,items,field,btnId){
+  document.getElementById(containerId).innerHTML = items.map(item=>`
+    <div class="opt-card" id="card-${field}-${item.id}" onclick="selectOpt('${field}','${item.id}','${btnId}')">
+      <span class="opt-icon">${item.icon}</span>
+      <span class="opt-tag">${item.tag}</span>
+      <div class="opt-name">${item.name}</div>
+      <div class="opt-desc">${item.desc}</div>
+    </div>`).join('');
+}
+
+// ═══════════════════════════════════════════════════════
+//  NAVIGATION
+// ═══════════════════════════════════════════════════════
+function goStep(n){
+  if(n===2){
+    const nm=document.getElementById('char-name').value.trim();
+    if(!nm){document.getElementById('char-name').focus();document.getElementById('char-name').style.borderColor='var(--crimson)';return;}
+    S.name=nm;
+  }
+  if(n===4&&S.cls) buildSubGrid(S.cls);
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+  document.getElementById('panel-'+n).classList.add('active');
+  S.step=n;
+  updateProgress(n);
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+function updateProgress(n){
+  for(let i=1;i<=8;i++){
+    const el=document.getElementById('s'+i);
+    if(!el) continue;
+    el.classList.remove('active','done');
+    if(i<n) el.classList.add('done');
+    else if(i===n) el.classList.add('active');
+  }
+}
+
+// ═══════════════════════════════════════════════════════
+//  SELECTION
+// ═══════════════════════════════════════════════════════
+function selectOpt(field,id,btnId){
+  document.querySelectorAll(`[id^="card-${field}-"]`).forEach(c=>c.classList.remove('selected'));
+  document.getElementById(`card-${field}-${id}`).classList.add('selected');
+  S[field]=id;
+  document.getElementById(btnId).disabled=false;
+  showDetailFor(field,id);
+}
+
+function showDetailFor(field,id){
+  const detailId={species:'species-detail',cls:'class-detail',subclass:'subclass-detail',bg:'bg-detail'}[field];
+  const el=document.getElementById(detailId);
+  if(!el) return;
+
+  if(field==='species'){
+    const d=SPECIES.find(x=>x.id===id);
+    el.innerHTML=`<div class="detail-title">${d.icon} ${d.name}</div>
+      <div class="detail-body"><strong>Tipo:</strong> ${d.type} · <strong>Tamaño:</strong> ${d.size} · <strong>Velocidad:</strong> ${d.speed}<br><strong>Idiomas:</strong> ${d.languages.join(', ')}</div>
+      <div class="detail-chips">${d.traits.map(t=>`<span class="chip" title="${t.d}">⚡ ${t.n}</span>`).join('')}</div>
+      <div class="detail-body" style="margin-top:.8rem;font-size:.88rem;">${d.traits.map(t=>`<p style="margin-bottom:.4rem;"><strong>${t.n}:</strong> ${t.d}</p>`).join('')}</div>`;
+  }else if(field==='cls'){
+    const d=CLASSES.find(x=>x.id===id);
+    const st=CLASS_STATS[id]||{};
+    const mod=v=>{const m=Math.floor((v-10)/2);return(m>=0?'+':'')+m;};
+    el.innerHTML=`<div class="detail-title">${d.icon} ${d.name}</div>
+      <div class="detail-body"><strong>Característica principal:</strong> ${d.stat_main} · <strong>Dado PG:</strong> ${d.dado_pg} · <strong>PG Nv.1:</strong> ${d.pg_nv1}</div>
+      <div class="stats-preview" style="margin:.8rem 0;">${Object.entries(st).map(([k,v])=>`<div class="stat-box"><span class="stat-label">${k}</span><div class="stat-val">${v}</div><div class="stat-mod">${mod(v)}</div></div>`).join('')}</div>
+      <div class="detail-chips">${d.salvaciones.map(s=>`<span class="chip">💾 ${s}</span>`).join('')}<span class="chip">🛡️ ${d.armaduras_comp}</span></div>
+      <div class="detail-body" style="margin-top:.8rem;font-size:.88rem;">${d.rasgos_nv1.map(r=>`<p style="margin-bottom:.4rem;"><strong>${r.n}:</strong> ${r.d}</p>`).join('')}</div>`;
+  }else if(field==='subclass'){
+    const subs=SUBCLASSES[S.cls]||[];
+    const d=subs.find(x=>x.n===id);
+    if(!d) return;
+    el.innerHTML=`<div class="detail-title">${d.icon} ${d.n}</div>
+      <div class="detail-body">${d.d}</div>
+      <div class="detail-body" style="margin-top:.6rem;font-size:.85rem;color:rgba(245,232,199,.5);font-style:italic;">Se desbloquea en el nivel 3.</div>`;
+  }else if(field==='bg'){
+    const d=BACKGROUNDS.find(x=>x.id===id);
+    el.innerHTML=`<div class="detail-title">${d.icon} ${d.name}</div>
+      <div class="detail-body">${d.desc}</div>
+      <div class="detail-chips">${d.stats.map(s=>`<span class="chip">📊 ${s}</span>`).join('')}<span class="chip">🎯 ${d.skills[0]}</span><span class="chip">🎯 ${d.skills[1]}</span><span class="chip">🔧 ${d.tool}</span><span class="chip">✨ ${d.dote}</span></div>
+      <div class="detail-body" style="margin-top:.6rem;font-size:.88rem;"><strong>Equipo:</strong> ${d.equipo}</div>`;
+  }
+  el.classList.add('visible');
+}
+
+function buildSubGrid(clsId){
+  const subs=SUBCLASSES[clsId]||[];
+  const cls=CLASSES.find(c=>c.id===clsId);
+  document.getElementById('subclass-intro').textContent=`Como ${cls?.name||clsId}, elige tu especialización. Se desbloquea en nv. 3, pero define tu identidad desde el inicio.`;
+  document.getElementById('subclass-grid').innerHTML=subs.map(s=>`
+    <div class="opt-card" id="card-subclass-${encodeURIComponent(s.n)}" onclick="selectSub('${s.n.replace(/'/g,"\\'")}')">
+      <span class="opt-icon">${s.icon}</span>
+      <div class="opt-name">${s.n}</div>
+      <div class="opt-desc">${s.d.slice(0,80)}…</div>
+    </div>`).join('');
+  S.subclass=null;
+  document.getElementById('btn4').disabled=true;
+  document.getElementById('subclass-detail').classList.remove('visible');
+}
+
+function selectSub(name){
+  document.querySelectorAll('[id^="card-subclass-"]').forEach(c=>c.classList.remove('selected'));
+  const el=document.getElementById(`card-subclass-${encodeURIComponent(name)}`);
+  if(el) el.classList.add('selected');
+  S.subclass=name;
+  document.getElementById('btn4').disabled=false;
+  showDetailFor('subclass',name);
+}
+
+// ═══════════════════════════════════════════════════════
+//  LEVEL GRID
+// ═══════════════════════════════════════════════════════
+const TIER_CLASS=['tier1','tier1','tier1','tier1','tier2','tier2','tier2','tier2','tier2','tier2','tier3','tier3','tier3','tier3','tier3','tier3','tier4','tier4','tier4','tier4'];
+const TIER_NAME=['Aprendiz','Aprendiz','Aprendiz','Aprendiz','Aventurero','Aventurero','Aventurero','Aventurero','Aventurero','Aventurero','Héroe','Héroe','Héroe','Héroe','Héroe','Héroe','Leyenda','Leyenda','Leyenda','Leyenda'];
+
+function buildLevelGrid(){
+  document.getElementById('level-grid').innerHTML=Array.from({length:20},(_,i)=>`
+    <div class="lvl-btn ${TIER_CLASS[i]} ${i===0?'selected':''}" onclick="selectLevel(${i+1})">${i+1}</div>`).join('');
+  selectLevel(1);
+}
+
+function selectLevel(lvl){
+  S.level=lvl;
+  document.querySelectorAll('.lvl-btn').forEach((b,i)=>{
+    b.classList.remove('selected');
+    if(i+1===lvl) b.classList.add('selected');
+  });
+  updateLevelDetail(lvl);
+}
+
+function updateLevelDetail(lvl){
+  const comp=[2,2,2,2,3,3,3,3,4,4,4,4,5,5,5,5,6,6,6,6][lvl-1];
+  const tier=TIER_NAME[lvl-1];
+  document.getElementById('lvl-title').textContent=`Nivel ${lvl} — ${tier}`;
+
+  let html=`<strong>Bonificador por competencia:</strong> +${comp}<br>`;
+
+  // PG info
+  const pgPerLvl={barbaro:7,explorador:6,guerrero:6,paladin:6,bardo:5,brujo:5,clerigo:5,druida:5,monje:5,picaro:5,hechicero:4,mago:4};
+  if(S.cls){
+    const cl=CLASSES.find(c=>c.id===S.cls);
+    const pgBase={barbaro:12,explorador:10,guerrero:10,paladin:10,bardo:8,brujo:8,clerigo:8,druida:8,monje:8,picaro:8,hechicero:6,mago:6}[S.cls]||8;
+    const pgPorNivel=pgPerLvl[S.cls]||5;
+    const rawStats=CLASS_STATS[S.cls]||{};
+    const conMod=Math.floor(((rawStats.CON||10)-10)/2);
+    const pgTotal=pgBase+(lvl-1)*pgPorNivel+lvl*conMod+(S.species==='enano'?lvl:0);
+    html+=`<strong>Puntos de Golpe estimados:</strong> ${Math.max(lvl,pgTotal)}<br>`;
+
+    if(cl&&cl.usa_magia){
+      const slots=getSpellSlots(S.cls,lvl);
+      const slotsStr=slots.map((s,i)=>s>0?`Nv.${i+1}: ${s}`:'').filter(Boolean).join(' · ');
+      if(slotsStr) html+=`<strong>Espacios de conjuro:</strong> ${slotsStr}<br>`;
+      if(S.cls==='brujo'){
+        const w=SPELL_SLOTS_WARLOCK[lvl];
+        html+=`<em>Brujo: ${w.slots} espacios de nivel ${w.nivel} (recupera en descanso corto)</em><br>`;
+      }
+    }
+  }
+
+  // Ataques adicionales
+  if(['guerrero'].includes(S.cls)&&lvl>=5) html+=`<strong>Ataques por acción:</strong> ${lvl>=20?4:lvl>=11?3:2}<br>`;
+  if(['barbaro','druida','monje','paladin','explorador'].includes(S.cls)&&lvl>=5) html+=`<strong>Ataques por acción:</strong> 2<br>`;
+
+  document.getElementById('lvl-info').innerHTML=html;
+}
+
+function getSpellSlots(clsId,lvl){
+  if(clsId==='brujo'){
+    const w=SPELL_SLOTS_WARLOCK[lvl];
+    const arr=[0,0,0,0,0,0,0,0,0];
+    arr[w.nivel-1]=w.slots;
+    return arr;
+  }
+  if(['explorador','paladin'].includes(clsId)) return SPELL_SLOTS_HALF[lvl]||[0,0,0,0,0,0,0,0,0];
+  return SPELL_SLOTS_FULL[lvl]||[0,0,0,0,0,0,0,0,0];
+}
+
+// ═══════════════════════════════════════════════════════
+//  SPELL STEP
+// ═══════════════════════════════════════════════════════
+function goToSpells(){
+  const cl=CLASSES.find(c=>c.id===S.cls);
+  S.cantrips=[];
+  S.spells=[];
+  if(!cl||!cl.usa_magia){
+    // No magic class: skip to sheet
+    showSheet();
+    return;
+  }
+  buildSpellPanel();
+  goStep(7);
+}
+
+function buildSpellPanel(){
+  const cl=CLASSES.find(c=>c.id===S.cls);
+  const pool=SPELLS[S.cls]||{trucos:[],nv1:[],nv2:[],nv3:[],nv4:[],nv5:[]};
+  const slots=getSpellSlots(S.cls,S.level);
+
+  // How many cantrips and spells to pick
+  let cantripCount=cl.trucos_inicio||0;
+  if(S.level>=4) cantripCount=Math.min((cl.trucos_inicio||0)+1,cantripCount+1);
+  if(S.level>=10) cantripCount=Math.min((cl.trucos_inicio||0)+2,cantripCount+2);
+
+  // Max spell level accessible
+  const maxSpellLvl=slots.findLastIndex(s=>s>0)+1;
+  const maxSpellLvlClamped=Math.min(maxSpellLvl,5);// we have data up to nv5
+
+  // Conjuros preparados
+  let spellCount;
+  if(S.cls==='mago') spellCount=6; // libro: empieza con 6
+  else if(S.cls==='hechicero') spellCount=cl.conjuros_inicio+Math.max(0,S.level-1);
+  else if(S.cls==='brujo') spellCount=cl.conjuros_inicio+Math.max(0,Math.floor((S.level-1)/2));
+  else{ // bardo, clerigo, druida, explorador, paladin
+    const aptMod=getAptitudeMod(S.cls);
+    spellCount=Math.max(1,(cl.conjuros_inicio||2)+Math.max(0,S.level-1));
+    spellCount=Math.min(spellCount,20);
+  }
+
+  let html=`<div class="level-badge">📖 Nivel ${S.level} · ${cl.name}</div>`;
+
+  const introText=`<p style="font-size:.95rem;color:rgba(245,232,199,.65);font-style:italic;margin-bottom:1rem;">
+    ${cl.usa_magia?`Aptitud mágica: <strong style="color:var(--gold)">${cl.aptitud}</strong> · `:''}
+    ${cantripCount>0?`Elige hasta <strong style="color:var(--gold)">${cantripCount} trucos</strong>.`:''}
+    ${maxSpellLvl>0?` Elige hasta <strong style="color:var(--gold)">${spellCount} conjuros</strong> (hasta nv. ${maxSpellLvlClamped}).`:''}
+  </p>`;
+  html+=introText;
+
+  // CANTRIPS
+  if(pool.trucos&&pool.trucos.length>0&&cantripCount>0){
+    html+=`<div class="spell-section-title">✦ Trucos (nv. 0) <span style="font-size:.7rem;opacity:.6">— permanentes, sin espacios de conjuro</span></div>`;
+    html+=`<div class="spell-counter">Seleccionados: <span id="cnt-cantrip">0</span> / ${cantripCount}</div>`;
+    html+=`<div class="spell-grid">${pool.trucos.map(s=>`
+      <div class="spell-card cantrip" id="sc-c-${encodeURI(s.n)}" onclick="toggleSpell('cantrip','${s.n.replace(/'/g,"\\'")}',${ cantripCount})">
+        <div class="spell-name">${s.n}</div>
+        <div class="spell-school">${s.e} · Truco</div>
+        <div class="spell-desc">${s.d}</div>
+      </div>`).join('')}</div>`;
+  }
+
+  // SPELL LEVELS
+  for(let lvl=1;lvl<=maxSpellLvlClamped;lvl++){
+    const key='nv'+lvl;
+    if(!pool[key]||pool[key].length===0) continue;
+    html+=`<div class="spell-section-title">✦ Conjuros de Nivel ${lvl} <span style="font-size:.7rem;opacity:.6">— ${slots[lvl-1]||0} espacios disponibles</span></div>`;
+    html+=`<div class="spell-grid">${pool[key].map(s=>`
+      <div class="spell-card" id="sc-${lvl}-${encodeURI(s.n)}" onclick="toggleSpell('spell','${s.n.replace(/'/g,"\\'")}',${spellCount})">
+        <div class="spell-name">${s.n}</div>
+        <div class="spell-school">${s.e} · Nv. ${lvl}</div>
+        <div class="spell-desc">${s.d}</div>
+      </div>`).join('')}</div>`;
+  }
+
+  html+=`<div class="spell-counter" style="margin-top:1rem;">Conjuros preparados: <span id="cnt-spell">0</span> / ${spellCount}</div>`;
+  document.getElementById('spell-intro').textContent=`Selecciona los hechizos de ${cl.name} para el nivel ${S.level}.`;
+  document.getElementById('spell-panel').innerHTML=html;
+}
+
+function getAptitudeMod(clsId){
+  const aptMap={bardo:'CAR',brujo:'CAR',clerigo:'SAB',druida:'SAB',explorador:'SAB',hechicero:'CAR',mago:'INT',paladin:'CAR'};
+  const apt=aptMap[clsId]||'INT';
+  const rawStats=CLASS_STATS[clsId]||{};
+  const val={INT:rawStats.INT,SAB:rawStats.SAB,CAR:rawStats.CAR}[apt]||10;
+  return Math.floor((val-10)/2);
+}
+
+function toggleSpell(type,name,max){
+  if(type==='cantrip'){
+    const idx=S.cantrips.indexOf(name);
+    if(idx>=0){
+      S.cantrips.splice(idx,1);
+    }else{
+      if(S.cantrips.length>=max) return;
+      S.cantrips.push(name);
+    }
+    const el=document.getElementById(`sc-c-${encodeURI(name)}`);
+    if(el) el.classList.toggle('selected',S.cantrips.includes(name));
+    const cnt=document.getElementById('cnt-cantrip');
+    if(cnt) cnt.textContent=S.cantrips.length;
+  }else{
+    const idx=S.spells.indexOf(name);
+    if(idx>=0){
+      S.spells.splice(idx,1);
+    }else{
+      if(S.spells.length>=max) return;
+      S.spells.push(name);
+    }
+    // find card across all levels
+    document.querySelectorAll(`[id^="sc-"]`).forEach(el=>{
+      if(el.id.includes(encodeURI(name))&&!el.id.includes('sc-c-'))
+        el.classList.toggle('selected',S.spells.includes(name));
+    });
+    const cnt=document.getElementById('cnt-spell');
+    if(cnt) cnt.textContent=S.spells.length;
+  }
+}
+
+// ═══════════════════════════════════════════════════════
+//  RANDOM NAMES
+// ═══════════════════════════════════════════════════════
+const NAMES={
+  epico:['Araniel','Vashtar','Elindra','Korroth','Sylvaine','Dravor','Thessaly','Zorvath','Miriel','Baldrek','Xyris','Caladwen','Aerindel','Valdris','Seraphon','Thalindra','Korrigan','Maevar','Azurath','Vorenthal'],
+  comun:['Torben','Mira','Aldric','Hilda','Gareth','Senna','Dorin','Lena','Bram','Yara','Edric','Clara','Oswin','Reva','Godric','Maren','Aldwin','Hana','Bertram','Lira'],
+  oscuro:['Malvek','Nyx','Shadowmere','Kraveth','Vex','Darath','Umbra','Grael','Sinis','Morthen','Vael','Dusk','Malachar','Vexara','Nyxen','Skrath','Morvaine','Nekara','Zarveth','Grimoire'],
+  elfo:['Aerdeth','Caelindra','Faelivrin','Galadhon','Ithilwen','Laerindel','Mithrandel','Nimrodel','Orophin','Rúmil','Silindë','Tauriel','Vanyar','Aeriniel','Celebwen','Elenmir','Finduilas','Gilraen','Haldir','Idril'],
+  enano:['Balin','Dwalin','Gloin','Oin','Bifur','Bofur','Bombur','Nori','Dori','Ori','Thorin','Fili','Kili','Thordak','Brundar','Helga','Agna','Marta','Dagna','Kerris'],
+  humano:['Aldric','Brennan','Cassia','Dorian','Elara','Fabian','Greta','Hadwin','Isolde','Jasper','Kira','Lucan','Maren','Nolen','Orla','Perin','Quinn','Roslin','Sander','Talia'],
+  mediano:['Bilbo','Frodo','Samwise','Rosie','Pippin','Merry','Lobelia','Daisy','Hamfast','Pansy','Largo','Ponto','Iris','Lily','Bando','Calla','Fosco','Peony','Rufus','Tanta'],
+  orco:['Grak','Thok','Urga','Drak','Morg','Skrag','Grush','Vorg','Kragg','Zug','Ashgara','Bruka','Gorga','Hurga','Krugga','Morgra','Shara','Tugra','Urgath','Yargra'],
+  draconido:['Arjhan','Balasar','Bharash','Donaar','Ghesh','Heskan','Kriv','Medrash','Mehen','Nadarr','Pandjed','Patrin','Rhogar','Shamash','Shedinn','Tarhun','Torinn','Uadjit','Vishap','Zedaar'],
+  aasimar:['Adiel','Amenadiel','Auriel','Castiel','Eliziel','Gavriel','Israelis','Mikhael','Nathanael','Raziel','Saraqael','Tzadkiel','Uriel','Zadkiel','Zaphkiel','Anael','Baraqiel','Camael','Danel','Eremiel'],
+  tiefling:['Akta','Bryseis','Damaia','Ea','Kallista','Lerissa','Makaria','Nemeia','Orianna','Phelaia','Rieta','Takacha','Tepherial','Vairë','Yrre','Zagash','Zarcha','Zovira','Criella','Raven'],
+  gnomo:['Alston','Alvyn','Boddynock','Brocc','Burgell','Dimble','Eldon','Erky','Fonkin','Frug','Gerbo','Gimble','Glim','Jebeddo','Kellen','Namfoodle','Orryn','Roondar','Seebo','Sindri'],
+  goliat:['Aukan','Eglath','Gae-Al','Gauthak','Ilikan','Keothi','Kuori','Lo-Kag','Manneo','Maveith','Nalla','Orilo','Paavu','Pethani','Thalai','Thotham','Uthal','Vaunea','Vimak','Vola'],
+  guerrero:['Aldric','Brennan','Gorin','Hadwin','Kastor','Lucan','Orin','Perin','Rolan','Sander','Tarvek','Aldred','Borik','Calen','Davan','Ektor','Falken','Garon','Havel','Maren'],
+  mago:['Aelindra','Calix','Daevon','Elara','Farix','Galen','Helios','Iriel','Jalindra','Kiran','Lyram','Mira','Nixol','Oryn','Phaedra','Quirin','Raelia','Sivix','Talix','Umbris'],
+  picaro:['Ash','Brynn','Cass','Dex','Elara','Finn','Ghost','Hex','Iris','Jax','Kira','Lyss','Mace','Nix','Onyx','Pip','Quinn','Rook','Shade','Trix'],
+  paladin:['Alduin','Brennus','Caelum','Davian','Edric','Flavian','Galahad','Hadric','Idris','Justus','Kaelum','Lucian','Markus','Nathan','Octavius','Persius','Quintus','Remus','Serius','Titus'],
+  brujo:['Aelith','Blackthorn','Corvus','Dareth','Echidna','Gloom','Hex','Ignis','Jorah','Kael','Lirien','Mortis','Nox','Obsidian','Quoth','Raven','Shadow','Umbra','Vex','Wraith'],
+  druida:['Acorn','Birch','Cedar','Dewdrop','Elm','Fern','Glen','Hazel','Ivy','Juniper','Kelp','Larch','Moss','Nettle','Oak','Pine','Quill','Reed','Sage','Thorn'],
+  masculino:['Aldric','Bram','Castor','Dorian','Edric','Fabian','Gareth','Hadwin','Idris','Jasper','Kiran','Lucan','Nolen','Oswin','Perin','Rolan','Sander','Torben','Godric','Orin'],
+  femenino:['Aelindra','Brynn','Cass','Daisy','Elara','Fern','Greta','Hana','Iris','Jade','Kira','Lena','Mira','Nyx','Orla','Phaedra','Reva','Senna','Talia','Yara'],
+  neutro:['Ash','Blaze','Cedar','Dawn','Echo','Frost','Glen','Hex','Iris','Jade','Kelp','Lark','Moss','Nix','Oak','Pine','Quinn','Reed','Sage','Thorn'],
+};
+
+const SURNAMES={
+  epico:['Vashtar','Forjafuego','Almaoscura','del Multiverso','Sombradragón','Lucestelares','Corazónpiedra','Almaacero'],
+  comun:['Herrero','Molinero','Carpintero','del Valle','de la Colina','Tejedor','Panadero','Cazador'],
+  oscuro:['Sombra','Niebla','Tinieblas','del Vacío','Ceniza','Sangre','Hueso','Maldición'],
+  elfo:['Lunaplata','Estrellabrillo','Hojadeplata','Ventodeamanecer','Ríocristal','Bosqueprofundo'],
+  enano:['Piedrahierro','Martillodoro','Yunquefuerte','Barbabronce','Brazoacero','Corazónroca'],
+  humano:['Aldric','Brennan','Castro','Dorian','Elan','Grant'],
+  mediano:['Bolsón','Tuk','Boffin','Brandybuck','Cuevagrande','Gamyi'],
+  orco:['Aplastacraneos','Rompehuesos','Golpeseco','Colmilloagudo','Garraférrea','Rugidoferoz'],
+};
+
+function randomName(type){
+  const arr=NAMES[type]||NAMES.epico;
+  document.getElementById('char-name').value=arr[Math.floor(Math.random()*arr.length)];
+  document.getElementById('char-name').style.borderColor='';
+}
+function randomNameCombined(){
+  const cats=['epico','comun','oscuro','elfo','enano','humano','mediano','orco'];
+  const cat=cats[Math.floor(Math.random()*cats.length)];
+  const first=(NAMES[cat]||NAMES.epico)[Math.floor(Math.random()*(NAMES[cat]||NAMES.epico).length)];
+  const sArr=SURNAMES[cat]||SURNAMES.comun;
+  const last=sArr[Math.floor(Math.random()*sArr.length)];
+  document.getElementById('char-name').value=`${first} ${last}`;
+  document.getElementById('char-name').style.borderColor='';
+}
+
+// ═══════════════════════════════════════════════════════
+//  GENERATE SHEET
+// ═══════════════════════════════════════════════════════
+function showSheet(){
+  document.getElementById('wizard').style.display='none';
+  document.getElementById('sheet-wrap').style.display='block';
+  updateProgress(8);
+
+  const sp=SPECIES.find(x=>x.id===S.species);
+  const cl=CLASSES.find(x=>x.id===S.cls);
+  const bg=BACKGROUNDS.find(x=>x.id===S.bg);
+  const subs=(SUBCLASSES[S.cls]||[]).find(x=>x.n===S.subclass)||{n:S.subclass||'—',d:''};
+  const lvl=S.level;
+  const comp=[2,2,2,2,3,3,3,3,4,4,4,4,5,5,5,5,6,6,6,6][lvl-1];
+
+  // Stats
+  const rawStats={...CLASS_STATS[S.cls]};
+  if(bg&&bg.stats.length>=2){
+    const sm={Fuerza:'FUE',Destreza:'DES',Constitución:'CON',Inteligencia:'INT',Sabiduría:'SAB',Carisma:'CAR'};
+    const k0=sm[bg.stats[0]],k1=sm[bg.stats[1]],k2=bg.stats[2]?sm[bg.stats[2]]:null;
+    if(k0&&rawStats[k0]!==undefined) rawStats[k0]=Math.min(20,rawStats[k0]+2);
+    if(k1&&rawStats[k1]!==undefined) rawStats[k1]=Math.min(20,rawStats[k1]+1);
+    if(k2&&rawStats[k2]!==undefined) rawStats[k2]=Math.min(20,rawStats[k2]+1);
+  }
+  const mod=v=>{const m=Math.floor((v-10)/2);return(m>=0?'+':'')+m;};
+  const conMod=Math.floor(((rawStats.CON||10)-10)/2);
+  const desMod=Math.floor(((rawStats.DES||10)-10)/2);
+  const sabMod=Math.floor(((rawStats.SAB||10)-10)/2);
+
+  // HP
+  const pgBase={barbaro:12,explorador:10,guerrero:10,paladin:10,bardo:8,brujo:8,clerigo:8,druida:8,monje:8,picaro:8,hechicero:6,mago:6}[S.cls]||8;
+  const pgPerLvl={barbaro:7,explorador:6,guerrero:6,paladin:6,bardo:5,brujo:5,clerigo:5,druida:5,monje:5,picaro:5,hechicero:4,mago:4}[S.cls]||5;
+  const pg=Math.max(1,pgBase+(lvl-1)*pgPerLvl+lvl*conMod+(sp&&sp.id==='enano'?lvl:0));
+
+  // CA
+  let ca;
+  if(S.cls==='barbaro') ca=10+desMod+conMod;
+  else if(S.cls==='monje') ca=10+desMod+sabMod;
+  else if(['mago','brujo','hechicero'].includes(S.cls)) ca=10+desMod;
+  else if(['bardo','clerigo','druida','explorador','picaro'].includes(S.cls)) ca=13+desMod;
+  else ca=16;
+
+  // Skills
+  const habs=[bg.skills[0],bg.skills[1]];
+  if(cl.habilidades_lista[0]!=='Cualquier habilidad (elige 3)'){
+    habs.push(...cl.habilidades_lista.filter(h=>!habs.includes(h)).slice(0,cl.id==='picaro'?4:2));
+  }else{
+    habs.push('Actuación','Persuasión','Engaño');
+  }
+
+  // Spell slots display
+  const slots=cl.usa_magia?getSpellSlots(S.cls,lvl):[0,0,0,0,0,0,0,0,0];
+  const slotsHTML=slots.map((s,i)=>s>0?`<span class="slot-pill">Nv.${i+1}: ${s}</span>`:'').filter(Boolean).join('');
+
+  // Attacks
+  let ataques='1';
+  if(['guerrero'].includes(S.cls)&&lvl>=5) ataques=lvl>=20?'4':lvl>=11?'3':'2';
+  else if(['barbaro','druida','monje','paladin','explorador'].includes(S.cls)&&lvl>=5) ataques='2';
+
+  // Stats HTML
+  const statsHTML=Object.entries(rawStats).map(([k,v])=>`
+    <div class="sheet-stat"><span class="sheet-stat-label">${k}</span><span class="sheet-stat-val">${v}</span><div class="sheet-stat-mod">${mod(v)}</div></div>`).join('');
+
+  const traitsHTML=cl.rasgos_nv1.map(r=>`<div class="trait-item"><span class="trait-name">${r.n}</span>${r.d}</div>`).join('');
+  const speciesTraitsHTML=sp.traits.slice(0,3).map(t=>`<div class="trait-item"><span class="trait-name">${t.n}</span>${t.d}</div>`).join('');
+
+  // Historia
+  const historias=[
+    `${S.name} creció como ${bg.name.toLowerCase()}, forjando ${bg.skills[0].toLowerCase()} y ${bg.skills[1].toLowerCase()} desde joven. Su herencia ${sp.name.toLowerCase()} le otorgó ${sp.traits[0].n.toLowerCase()}, un don que pronto resultó indispensable. El día que tomó el camino del ${cl.name.toLowerCase()} marcó el inicio de una nueva vida.`,
+    `Nacido entre los ${sp.name.toLowerCase()}s, ${S.name} siempre supo que su destino era mayor que su origen. Años como ${bg.name.toLowerCase()} forjaron su carácter antes de que la llamada del ${cl.name.toLowerCase()} llegara. Ahora empuña su poder como quien sostiene una antorcha en la oscuridad.`,
+    `${S.name} nunca encajó del todo como ${bg.name.toLowerCase()}. Su naturaleza ${sp.name.toLowerCase()} y su inclinación hacia las artes del ${cl.name.toLowerCase()} le hicieron diferente. Un día, esa diferencia se convirtió en su mayor fortaleza.`,
+  ];
+
+  // Spells section for sheet
+  let spellsSheetHTML='';
+  if(cl.usa_magia){
+    spellsSheetHTML=`
+    <div class="sheet-section">
+      <div class="sheet-section-title">Aptitud Mágica — ${cl.aptitud} · CD ${8+comp+getAptitudeMod(S.cls)} · Ataque de conjuro ${mod(getAptitudeMod(S.cls)+comp)}</div>
+      <div class="sheet-content">
+        ${S.cls==='brujo'?`<em>Brujo: ${SPELL_SLOTS_WARLOCK[lvl].slots} espacios de nv. ${SPELL_SLOTS_WARLOCK[lvl].nivel} (recupera en descanso corto)</em>`:`<div style="display:flex;flex-wrap:wrap;gap:.4rem;margin-bottom:.6rem;">${slotsHTML||'<em>Sin espacios de conjuro a este nivel</em>'}</div>`}
+      </div>
+    </div>
+    ${S.cantrips.length>0?`<div class="sheet-section">
+      <div class="sheet-section-title">Trucos</div>
+      <div class="sheet-content">${S.cantrips.map(c=>`<span class="sheet-spell-item sheet-cantrip-item">${c}</span>`).join('')}</div>
+    </div>`:''}
+    ${S.spells.length>0?`<div class="sheet-section">
+      <div class="sheet-section-title">Conjuros Preparados (${S.spells.length})</div>
+      <div class="sheet-content">${S.spells.map(s=>`<span class="sheet-spell-item">${s}</span>`).join('')}</div>
+    </div>`:''}`;
+  }
+
+  document.getElementById('sheet').innerHTML=`
+    <div class="sheet-header">
+      <div class="sheet-pre">Dungeons &amp; Dragons 2024 · Ficha de Personaje · Nivel ${lvl}</div>
+      <div class="sheet-name">${S.name}</div>
+      <div class="sheet-meta">${sp.name} &nbsp;·&nbsp; ${cl.name} (${subs.n}) &nbsp;·&nbsp; ${bg.name}</div>
+    </div>
+
+    <div class="sheet-stats-row">${statsHTML}</div>
+
+    <div class="sheet-boxes">
+      <div class="sheet-box"><span class="sheet-box-label">Puntos de Golpe</span><div class="sheet-box-val">${pg}</div></div>
+      <div class="sheet-box"><span class="sheet-box-label">Clase de Armadura</span><div class="sheet-box-val">${ca}</div></div>
+      <div class="sheet-box"><span class="sheet-box-label">Velocidad</span><div class="sheet-box-val">${sp.speed}</div></div>
+      <div class="sheet-box"><span class="sheet-box-label">Iniciativa</span><div class="sheet-box-val">${mod(rawStats.DES)}</div></div>
+      <div class="sheet-box"><span class="sheet-box-label">Bonif. Competencia</span><div class="sheet-box-val">+${comp}</div></div>
+      <div class="sheet-box"><span class="sheet-box-label">Ataques / Acción</span><div class="sheet-box-val">${ataques}</div></div>
+    </div>
+
+    <div class="sheet-grid">
+      <div>
+        <div class="sheet-section">
+          <div class="sheet-section-title">Rasgos de Clase — ${cl.name}</div>
+          <div class="sheet-content">${traitsHTML}</div>
+        </div>
+        <div class="sheet-section">
+          <div class="sheet-section-title">Subcategoría — ${subs.n} <em style="font-size:.8em;color:var(--crimson)">(nv. 3)</em></div>
+          <div class="sheet-content" style="font-size:.92rem;">${subs.d}</div>
+        </div>
+      </div>
+      <div>
+        <div class="sheet-section">
+          <div class="sheet-section-title">Rasgos de Especie — ${sp.name}</div>
+          <div class="sheet-content">${speciesTraitsHTML}</div>
+        </div>
+        <div class="sheet-section">
+          <div class="sheet-section-title">Trasfondo — ${bg.name}</div>
+          <div class="sheet-content">
+            <div class="trait-item"><span class="trait-name">Dote</span>${bg.dote}</div>
+            <div class="trait-item"><span class="trait-name">Competencias</span>${bg.skills.join(' · ')} · ${bg.tool}</div>
+            <div class="trait-item"><span class="trait-name">Ajuste características</span>${bg.stats[0]} +2, ${bg.stats[1]} +1${bg.stats[2]?', '+bg.stats[2]+' +1':''}</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    ${spellsSheetHTML}
+
+    <div class="sheet-grid">
+      <div class="sheet-section">
+        <div class="sheet-section-title">Tiradas de Salvación</div>
+        <div class="list-inline">${cl.salvaciones.join(' · ')}</div>
+      </div>
+      <div class="sheet-section">
+        <div class="sheet-section-title">Habilidades</div>
+        <div class="list-inline">${[...new Set(habs)].join(' · ')}</div>
+      </div>
+    </div>
+
+    <div class="sheet-grid">
+      <div class="sheet-section">
+        <div class="sheet-section-title">Equipo Inicial — Clase</div>
+        <div class="sheet-content" style="font-size:.9rem;"><strong>A:</strong> ${cl.equipo[0][0]}<br><em style="color:var(--crimson)"><strong>B:</strong> ${cl.equipo[0][1]} en oro</em></div>
+      </div>
+      <div class="sheet-section">
+        <div class="sheet-section-title">Equipo de Trasfondo</div>
+        <div class="sheet-content" style="font-size:.9rem;">${bg.equipo}</div>
+      </div>
+    </div>
+
+    <div class="sheet-section">
+      <div class="sheet-section-title">Idiomas</div>
+      <div class="list-inline">${sp.languages.join(' · ')}</div>
+    </div>
+
+    <div class="sheet-section">
+      <div class="sheet-section-title">Historia del Personaje</div>
+      <div class="history-box">${historias[Math.floor(Math.random()*historias.length)]}</div>
+    </div>
+  `;
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+// ═══════════════════════════════════════════════════════
+//  RESET
+// ═══════════════════════════════════════════════════════
+function resetAll(){
+  Object.assign(S,{step:1,name:'',species:null,cls:null,subclass:null,bg:null,level:1,cantrips:[],spells:[]});
+  document.getElementById('sheet-wrap').style.display='none';
+  document.getElementById('wizard').style.display='block';
+  document.getElementById('char-name').value='';
+  document.querySelectorAll('.opt-card').forEach(c=>c.classList.remove('selected'));
+  document.querySelectorAll('.detail-box').forEach(b=>b.classList.remove('visible'));
+  ['btn2','btn3','btn4','btn5'].forEach(b=>{const el=document.getElementById(b);if(el)el.disabled=true;});
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+  document.getElementById('panel-1').classList.add('active');
+  buildLevelGrid();
+  updateProgress(1);
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+</script>
+</body>
+</html>

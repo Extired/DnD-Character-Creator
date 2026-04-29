@@ -1,0 +1,1223 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Creador de Personajes — D&D 2024</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700;900&family=Cinzel:wght@400;500;600;700&family=Crimson+Text:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+<style>
+:root {
+  --gold: #c9a84c; --gold-light: #e8c97a; --gold-dark: #8a6a1f;
+  --crimson: #8b1a1a; --crimson-dark: #5a0f0f;
+  --parchment: #f5e8c7; --parchment-dark: #e8d5a3;
+  --ink: #1a0f0a; --ink-light: #3d2b1f;
+  --bg: #0d0805;
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body {
+  background: var(--bg);
+  color: var(--parchment);
+  font-family: 'Crimson Text', Georgia, serif;
+  min-height: 100vh;
+  background-image:
+    radial-gradient(ellipse at 20% 50%, rgba(139,26,26,0.08) 0%, transparent 50%),
+    radial-gradient(ellipse at 80% 20%, rgba(201,168,76,0.05) 0%, transparent 40%);
+}
+body::before {
+  content:'';
+  position:fixed; inset:0; pointer-events:none; z-index:0;
+  background-image:
+    radial-gradient(1px 1px at 10% 15%, rgba(255,255,200,0.4) 0%, transparent 100%),
+    radial-gradient(1px 1px at 25% 45%, rgba(255,255,200,0.3) 0%, transparent 100%),
+    radial-gradient(1px 1px at 50% 10%, rgba(255,255,200,0.5) 0%, transparent 100%),
+    radial-gradient(1px 1px at 70% 30%, rgba(255,255,200,0.2) 0%, transparent 100%),
+    radial-gradient(1px 1px at 85% 70%, rgba(255,255,200,0.4) 0%, transparent 100%),
+    radial-gradient(1px 1px at 40% 80%, rgba(255,255,200,0.3) 0%, transparent 100%),
+    radial-gradient(1px 1px at 15% 75%, rgba(255,255,200,0.3) 0%, transparent 100%),
+    radial-gradient(1px 1px at 90% 40%, rgba(255,255,200,0.4) 0%, transparent 100%);
+}
+.app { position:relative; z-index:1; max-width:960px; margin:0 auto; padding:2rem 1.5rem 4rem; }
+
+/* HEADER */
+header { text-align:center; padding:3rem 0 2rem; position:relative; }
+header::after { content:''; display:block; width:80%; height:1px; background:linear-gradient(90deg,transparent,var(--gold),transparent); margin:1.5rem auto 0; }
+.header-sub { font-family:'Cinzel',serif; font-size:.75rem; letter-spacing:.4em; color:var(--gold); text-transform:uppercase; margin-bottom:.8rem; }
+h1 { font-family:'Cinzel Decorative',serif; font-size:clamp(1.8rem,5vw,3rem); color:var(--gold-light); text-shadow:0 0 40px rgba(201,168,76,.4),0 2px 4px rgba(0,0,0,.8); line-height:1.2; }
+h1 span { color:var(--crimson); text-shadow:0 0 30px rgba(139,26,26,.6),0 2px 4px rgba(0,0,0,.8); }
+
+/* PROGRESS */
+.progress-wrap { margin:2rem 0; }
+.progress-steps { display:flex; justify-content:center; position:relative; }
+.progress-steps::before { content:''; position:absolute; top:50%; left:5%; right:5%; height:1px; background:var(--gold-dark); transform:translateY(-1.1rem); z-index:0; }
+.step { display:flex; flex-direction:column; align-items:center; gap:.4rem; flex:1; position:relative; z-index:1; }
+.step-circle { width:2.2rem; height:2.2rem; border-radius:50%; border:1px solid var(--gold-dark); background:var(--bg); display:flex; align-items:center; justify-content:center; font-family:'Cinzel',serif; font-size:.75rem; color:rgba(245,232,199,.35); transition:all .3s; }
+.step.active .step-circle { border-color:var(--gold); color:var(--gold); box-shadow:0 0 12px rgba(201,168,76,.4); background:rgba(201,168,76,.1); }
+.step.done .step-circle { border-color:var(--gold-dark); background:var(--gold-dark); color:var(--bg); }
+.step-label { font-family:'Cinzel',serif; font-size:.58rem; letter-spacing:.1em; text-transform:uppercase; color:rgba(245,232,199,.35); text-align:center; }
+.step.active .step-label { color:var(--gold); }
+.step.done .step-label { color:var(--gold-dark); }
+
+/* PANEL */
+.panel { background:linear-gradient(160deg,rgba(26,15,10,.97),rgba(13,8,5,.99)); border:1px solid var(--gold-dark); border-radius:4px; padding:2.5rem; margin:1.5rem 0; position:relative; animation:panelIn .35s ease; display:none; }
+.panel.active { display:block; }
+@keyframes panelIn { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
+.panel::before { content:''; position:absolute; inset:2px; border:1px solid rgba(201,168,76,.06); border-radius:3px; pointer-events:none; }
+.panel-step { font-family:'Cinzel',serif; font-size:.65rem; letter-spacing:.3em; text-transform:uppercase; color:var(--gold); margin-bottom:.3rem; }
+.panel h2 { font-family:'Cinzel Decorative',serif; font-size:1.5rem; color:var(--parchment); margin-bottom:.5rem; }
+.panel-desc { font-size:1rem; color:rgba(245,232,199,.6); font-style:italic; margin-bottom:1.8rem; line-height:1.5; }
+
+/* INPUTS */
+.name-wrap { display:flex; flex-direction:column; gap:.5rem; margin-bottom:1.5rem; }
+.name-wrap label { font-family:'Cinzel',serif; font-size:.7rem; letter-spacing:.15em; color:var(--gold); }
+input[type=text] { background:rgba(0,0,0,.5); border:1px solid var(--gold-dark); border-radius:3px; padding:.75rem 1rem; color:var(--parchment); font-family:'Crimson Text',serif; font-size:1.2rem; outline:none; transition:border-color .2s; width:100%; }
+input[type=text]:focus { border-color:var(--gold); }
+
+/* BUTTONS */
+.btn { font-family:'Cinzel',serif; font-size:.78rem; letter-spacing:.12em; text-transform:uppercase; padding:.7rem 1.5rem; border:1px solid var(--gold); border-radius:3px; cursor:pointer; transition:all .2s; white-space:nowrap; }
+.btn-primary { background:linear-gradient(135deg,var(--crimson-dark),var(--crimson)); color:var(--gold-light); box-shadow:0 2px 8px rgba(139,26,26,.4); }
+.btn-primary:hover { background:linear-gradient(135deg,var(--crimson),#a82020); box-shadow:0 4px 16px rgba(139,26,26,.6); transform:translateY(-1px); }
+.btn-secondary { background:transparent; color:var(--gold); border-color:var(--gold-dark); }
+.btn-secondary:hover { border-color:var(--gold); background:rgba(201,168,76,.1); }
+.btn:disabled { opacity:.35; cursor:not-allowed; transform:none; }
+.btn-sm { padding:.5rem 1rem; font-size:.7rem; }
+
+/* OPTION CARDS */
+.options-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(170px,1fr)); gap:.9rem; margin-bottom:1.5rem; }
+.opt-card { border:1px solid var(--gold-dark); border-radius:4px; padding:1rem; cursor:pointer; transition:all .2s; background:rgba(0,0,0,.3); position:relative; }
+.opt-card:hover { border-color:var(--gold); transform:translateY(-2px); background:rgba(201,168,76,.05); }
+.opt-card.selected { border-color:var(--gold); background:rgba(201,168,76,.12); box-shadow:0 0 18px rgba(201,168,76,.18); }
+.opt-icon { font-size:1.7rem; margin-bottom:.45rem; display:block; }
+.opt-name { font-family:'Cinzel',serif; font-size:.82rem; letter-spacing:.04em; color:var(--gold-light); margin-bottom:.25rem; }
+.opt-tag { display:inline-block; font-family:'Cinzel',serif; font-size:.58rem; letter-spacing:.1em; background:rgba(201,168,76,.12); border:1px solid rgba(201,168,76,.25); border-radius:2px; padding:.1rem .4rem; color:var(--gold); margin-bottom:.3rem; }
+.opt-desc { font-size:.78rem; color:rgba(245,232,199,.5); font-style:italic; line-height:1.4; }
+.opt-card.selected .opt-desc { color:rgba(245,232,199,.72); }
+
+/* DETAIL BOX */
+.detail-box { border:1px solid rgba(201,168,76,.2); border-radius:3px; padding:1.2rem 1.5rem; background:rgba(201,168,76,.04); margin-bottom:1.5rem; display:none; animation:fadeIn .3s ease; }
+.detail-box.visible { display:block; }
+@keyframes fadeIn { from{opacity:0} to{opacity:1} }
+.detail-title { font-family:'Cinzel',serif; font-size:.75rem; letter-spacing:.15em; color:var(--gold); margin-bottom:.6rem; text-transform:uppercase; }
+.detail-body { font-size:.95rem; color:rgba(245,232,199,.8); line-height:1.7; }
+.detail-chips { display:flex; flex-wrap:wrap; gap:.4rem; margin-top:.8rem; }
+.chip { font-family:'Cinzel',serif; font-size:.62rem; letter-spacing:.1em; border:1px solid rgba(201,168,76,.3); border-radius:2px; padding:.2rem .6rem; color:var(--gold); background:rgba(201,168,76,.07); }
+
+/* STATS GRID */
+.stats-preview { display:grid; grid-template-columns:repeat(6,1fr); gap:.5rem; margin:1rem 0; }
+.stat-box { border:1px solid rgba(201,168,76,.25); border-radius:3px; padding:.5rem .3rem; text-align:center; background:rgba(0,0,0,.2); }
+.stat-label { font-family:'Cinzel',serif; font-size:.55rem; letter-spacing:.08em; color:var(--gold-dark); display:block; margin-bottom:.15rem; }
+.stat-val { font-family:'Cinzel Decorative',serif; font-size:1.1rem; color:var(--parchment); }
+.stat-mod { font-size:.7rem; color:var(--gold); }
+
+/* NAV */
+.nav-row { display:flex; justify-content:space-between; align-items:center; margin-top:1.5rem; gap:1rem; }
+.ornament { text-align:center; color:var(--gold-dark); margin:.8rem 0; opacity:.5; }
+
+/* ── CHARACTER SHEET ── */
+#sheet-wrap { display:none; }
+.sheet { background:var(--parchment); color:var(--ink); border-radius:5px; padding:2.5rem 2.5rem 3rem; position:relative; font-family:'Crimson Text',serif; box-shadow:0 20px 60px rgba(0,0,0,.85), inset 0 0 80px rgba(0,0,0,.04); }
+.sheet::before { content:''; position:absolute; inset:8px; border:1px solid rgba(139,26,26,.18); pointer-events:none; border-radius:3px; }
+.sheet-header { text-align:center; border-bottom:2px solid var(--crimson-dark); padding-bottom:1.2rem; margin-bottom:1.8rem; }
+.sheet-pre { font-family:'Cinzel',serif; font-size:.62rem; letter-spacing:.3em; color:var(--crimson-dark); margin-bottom:.3rem; }
+.sheet-name { font-family:'Cinzel Decorative',serif; font-size:2.2rem; color:var(--ink); line-height:1.1; margin-bottom:.3rem; }
+.sheet-meta { font-family:'Cinzel',serif; font-size:.78rem; letter-spacing:.1em; color:var(--crimson); }
+.sheet-grid { display:grid; grid-template-columns:1fr 1fr; gap:1.5rem; margin-bottom:1.5rem; }
+.sheet-section { margin-bottom:1.5rem; }
+.sheet-section-title { font-family:'Cinzel',serif; font-size:.66rem; letter-spacing:.25em; text-transform:uppercase; color:var(--crimson-dark); border-bottom:1px solid rgba(139,26,26,.25); padding-bottom:.25rem; margin-bottom:.7rem; }
+.sheet-content { font-size:.97rem; color:var(--ink-light); line-height:1.65; }
+.sheet-stats-row { display:grid; grid-template-columns:repeat(6,1fr); gap:.6rem; margin-bottom:1.5rem; }
+.sheet-stat { border:1px solid rgba(139,26,26,.22); border-radius:3px; padding:.6rem .3rem; text-align:center; background:rgba(139,26,26,.03); }
+.sheet-stat-label { font-family:'Cinzel',serif; font-size:.55rem; letter-spacing:.15em; color:var(--crimson); display:block; margin-bottom:.15rem; }
+.sheet-stat-val { font-family:'Cinzel Decorative',serif; font-size:1.4rem; color:var(--ink); display:block; }
+.sheet-stat-mod { font-size:.8rem; color:var(--crimson-dark); }
+.sheet-boxes { display:grid; grid-template-columns:repeat(3,1fr); gap:.8rem; margin-bottom:1.5rem; }
+.sheet-box { border:1px solid rgba(139,26,26,.22); border-radius:3px; padding:.7rem; text-align:center; }
+.sheet-box-label { font-family:'Cinzel',serif; font-size:.58rem; letter-spacing:.15em; color:var(--crimson); display:block; margin-bottom:.2rem; }
+.sheet-box-val { font-family:'Cinzel Decorative',serif; font-size:1.6rem; color:var(--ink); }
+.trait-item { padding:.3rem 0 .3rem .9rem; border-left:2px solid rgba(139,26,26,.2); margin-bottom:.4rem; font-size:.95rem; }
+.trait-name { font-family:'Cinzel',serif; font-size:.7rem; color:var(--crimson-dark); display:block; margin-bottom:.1rem; }
+.history-box { font-style:italic; font-size:1.02rem; line-height:1.8; border-left:3px solid rgba(139,26,26,.3); padding-left:1rem; color:var(--ink-light); }
+.list-inline { font-size:.95rem; color:var(--ink-light); }
+
+/* DOWNLOAD ROW */
+.download-row { display:flex; gap:1rem; justify-content:center; flex-wrap:wrap; margin-top:2rem; }
+
+@media(max-width:600px) {
+  .options-grid { grid-template-columns:repeat(2,1fr); }
+  .sheet-stats-row { grid-template-columns:repeat(3,1fr); }
+  .sheet-grid { grid-template-columns:1fr; }
+  .sheet-boxes { grid-template-columns:repeat(2,1fr); }
+  .stats-preview { grid-template-columns:repeat(3,1fr); }
+  .panel { padding:1.5rem; }
+  h1 { font-size:1.6rem; }
+}
+
+@media print {
+  body { background:white !important; }
+  body::before { display:none; }
+  header, .progress-wrap, #wizard, .download-row, .ornament { display:none !important; }
+  #sheet-wrap { display:block !important; }
+  .sheet { box-shadow:none; padding:1rem; }
+}
+</style>
+</head>
+<body>
+<div class="app">
+
+<header>
+  <p class="header-sub">Manual del Jugador 2024 · Edición Española</p>
+  <h1>Creador de<br><span>Personajes</span></h1>
+</header>
+
+<!-- PROGRESS BAR -->
+<div class="progress-wrap" id="progress-wrap">
+  <div class="progress-steps">
+    <div class="step active" id="s1"><div class="step-circle">1</div><div class="step-label">Nombre</div></div>
+    <div class="step" id="s2"><div class="step-circle">2</div><div class="step-label">Especie</div></div>
+    <div class="step" id="s3"><div class="step-circle">3</div><div class="step-label">Clase</div></div>
+    <div class="step" id="s4"><div class="step-circle">4</div><div class="step-label">Subclase</div></div>
+    <div class="step" id="s5"><div class="step-circle">5</div><div class="step-label">Trasfondo</div></div>
+    <div class="step" id="s6"><div class="step-circle">6</div><div class="step-label">Ficha</div></div>
+  </div>
+</div>
+
+<!-- WIZARD -->
+<div id="wizard">
+
+  <!-- STEP 1: NAME -->
+  <div class="panel active" id="panel-1">
+    <p class="panel-step">Paso 1 de 5</p>
+    <h2>El Nombre del Héroe</h2>
+    <p class="panel-desc">El nombre es lo primero que recordarán de ti. Puede ser épico, misterioso o sencillo. Escríbelo o usa el dado para inspirarte.</p>
+    <div class="name-wrap">
+      <label for="char-name">Nombre del personaje</label>
+      <input type="text" id="char-name" placeholder="Ej: Araniel Vashtar, Durgin Piedrahierro…" maxlength="40">
+    </div>
+    <div style="margin-bottom:1.5rem;">
+      <div style="font-family:'Cinzel',serif;font-size:.65rem;letter-spacing:.2em;color:var(--gold);text-transform:uppercase;margin-bottom:.6rem;">Por estilo</div>
+      <div style="display:flex;gap:.5rem;flex-wrap:wrap;margin-bottom:1rem;">
+        <button class="btn btn-secondary btn-sm" onclick="randomName('epico')">⚔️ Épico</button>
+        <button class="btn btn-secondary btn-sm" onclick="randomName('comun')">🏠 Común</button>
+        <button class="btn btn-secondary btn-sm" onclick="randomName('oscuro')">🌑 Oscuro</button>
+      </div>
+      <div style="font-family:'Cinzel',serif;font-size:.65rem;letter-spacing:.2em;color:var(--gold);text-transform:uppercase;margin-bottom:.6rem;">Por especie</div>
+      <div style="display:flex;gap:.5rem;flex-wrap:wrap;margin-bottom:1rem;">
+        <button class="btn btn-secondary btn-sm" onclick="randomName('elfo')">🌿 Elfo</button>
+        <button class="btn btn-secondary btn-sm" onclick="randomName('enano')">⛏️ Enano</button>
+        <button class="btn btn-secondary btn-sm" onclick="randomName('humano')">⚔️ Humano</button>
+        <button class="btn btn-secondary btn-sm" onclick="randomName('mediano')">🍀 Mediano</button>
+        <button class="btn btn-secondary btn-sm" onclick="randomName('orco')">💪 Orco</button>
+        <button class="btn btn-secondary btn-sm" onclick="randomName('draconido')">🐉 Dracónido</button>
+        <button class="btn btn-secondary btn-sm" onclick="randomName('aasimar')">😇 Aasimar</button>
+        <button class="btn btn-secondary btn-sm" onclick="randomName('tiefling')">😈 Tiefling</button>
+        <button class="btn btn-secondary btn-sm" onclick="randomName('gnomo')">🔮 Gnomo</button>
+        <button class="btn btn-secondary btn-sm" onclick="randomName('goliat')">🏔️ Goliat</button>
+      </div>
+      <div style="font-family:'Cinzel',serif;font-size:.65rem;letter-spacing:.2em;color:var(--gold);text-transform:uppercase;margin-bottom:.6rem;">Por clase</div>
+      <div style="display:flex;gap:.5rem;flex-wrap:wrap;margin-bottom:1rem;">
+        <button class="btn btn-secondary btn-sm" onclick="randomName('guerrero')">🛡️ Guerrero</button>
+        <button class="btn btn-secondary btn-sm" onclick="randomName('mago')">📚 Mago</button>
+        <button class="btn btn-secondary btn-sm" onclick="randomName('picaro')">🗡️ Pícaro</button>
+        <button class="btn btn-secondary btn-sm" onclick="randomName('paladin')">✝️ Paladín</button>
+        <button class="btn btn-secondary btn-sm" onclick="randomName('brujo')">🌑 Brujo</button>
+        <button class="btn btn-secondary btn-sm" onclick="randomName('druida')">🌲 Druida</button>
+      </div>
+      <div style="font-family:'Cinzel',serif;font-size:.65rem;letter-spacing:.2em;color:var(--gold);text-transform:uppercase;margin-bottom:.6rem;">Por género</div>
+      <div style="display:flex;gap:.5rem;flex-wrap:wrap;">
+        <button class="btn btn-secondary btn-sm" onclick="randomName('masculino')">♂ Masculino</button>
+        <button class="btn btn-secondary btn-sm" onclick="randomName('femenino')">♀ Femenino</button>
+        <button class="btn btn-secondary btn-sm" onclick="randomName('neutro')">⚬ Neutro/No binario</button>
+        <button class="btn btn-secondary btn-sm" onclick="randomNameCombined()" style="border-color:var(--gold);color:var(--gold-light);">🎲 Nombre + apellido</button>
+      </div>
+    </div>
+    <div class="nav-row">
+      <span></span>
+      <button class="btn btn-primary" onclick="goStep(2)">Siguiente →</button>
+    </div>
+  </div>
+
+  <!-- STEP 2: SPECIES -->
+  <div class="panel" id="panel-2">
+    <p class="panel-step">Paso 2 de 5</p>
+    <h2>Elige tu Especie</h2>
+    <p class="panel-desc">Tu especie define tu herencia, rasgos innatos y cómo te percibe el mundo. Hay diez especies en el Manual del Jugador 2024.</p>
+    <div class="options-grid" id="species-grid"></div>
+    <div class="detail-box" id="species-detail"></div>
+    <div class="nav-row">
+      <button class="btn btn-secondary" onclick="goStep(1)">← Atrás</button>
+      <button class="btn btn-primary" id="btn2" onclick="goStep(3)" disabled>Siguiente →</button>
+    </div>
+  </div>
+
+  <!-- STEP 3: CLASS -->
+  <div class="panel" id="panel-3">
+    <p class="panel-step">Paso 3 de 5</p>
+    <h2>Elige tu Clase</h2>
+    <p class="panel-desc">Tu clase es tu vocación como aventurero: cómo te enfrentas al peligro, qué poderes canalizas y qué rol cumples en el grupo.</p>
+    <div class="options-grid" id="class-grid"></div>
+    <div class="detail-box" id="class-detail"></div>
+    <div class="nav-row">
+      <button class="btn btn-secondary" onclick="goStep(2)">← Atrás</button>
+      <button class="btn btn-primary" id="btn3" onclick="goStep(4)" disabled>Siguiente →</button>
+    </div>
+  </div>
+
+  <!-- STEP 4: SUBCLASS -->
+  <div class="panel" id="panel-4">
+    <p class="panel-step">Paso 4 de 5</p>
+    <h2>Elige tu Subcategoría</h2>
+    <p class="panel-desc" id="subclass-intro">Cada clase ofrece cuatro especializaciones. Aunque se desbloquea en el nivel 3, tu elección define tu identidad desde el principio.</p>
+    <div class="options-grid" id="subclass-grid"></div>
+    <div class="detail-box" id="subclass-detail"></div>
+    <div class="nav-row">
+      <button class="btn btn-secondary" onclick="goStep(3)">← Atrás</button>
+      <button class="btn btn-primary" id="btn4" onclick="goStep(5)" disabled>Siguiente →</button>
+    </div>
+  </div>
+
+  <!-- STEP 5: BACKGROUND -->
+  <div class="panel" id="panel-5">
+    <p class="panel-step">Paso 5 de 5</p>
+    <h2>Elige tu Trasfondo</h2>
+    <p class="panel-desc">Tu trasfondo cuenta de dónde vienes. Otorga tres características de trasfondo, una dote, dos competencias en habilidades y una de herramienta.</p>
+    <div class="options-grid" id="bg-grid"></div>
+    <div class="detail-box" id="bg-detail"></div>
+    <div class="nav-row">
+      <button class="btn btn-secondary" onclick="goStep(4)">← Atrás</button>
+      <button class="btn btn-primary" id="btn5" onclick="showSheet()" disabled>✦ Generar Ficha</button>
+    </div>
+  </div>
+
+</div><!-- /wizard -->
+
+<!-- CHARACTER SHEET -->
+<div id="sheet-wrap">
+  <div class="ornament">✦ ✦ ✦</div>
+  <div class="sheet" id="sheet"></div>
+  <div class="download-row">
+    <button class="btn btn-primary" onclick="window.print()">🖨️ Imprimir / Guardar PDF</button>
+    <button class="btn btn-secondary" onclick="resetAll()">⚔ Nuevo personaje</button>
+  </div>
+</div>
+
+</div><!-- /app -->
+
+<script>
+// ═══════════════════════════════════════════════════
+//  DATA — extraído del Manual del Jugador 2024 (ES)
+// ═══════════════════════════════════════════════════
+
+const NAMES = {
+  // Por estilo
+  epico:    ['Araniel','Vashtar','Elindra','Korroth','Sylvaine','Dravor','Thessaly','Zorvath','Miriel','Baldrek','Xyris','Caladwen','Aerindel','Valdris','Seraphon','Thalindra','Korrigan','Maevar','Azurath','Vorenthal'],
+  comun:    ['Torben','Mira','Aldric','Hilda','Gareth','Senna','Dorin','Lena','Bram','Yara','Edric','Clara','Oswin','Reva','Godric','Maren','Aldwin','Hana','Bertram','Lira'],
+  oscuro:   ['Malvek','Nyx','Shadowmere','Kraveth','Vex','Darath','Umbra','Grael','Sinis','Morthen','Vael','Dusk','Malachar','Vexara','Nyxen','Skrath','Morvaine','Duskwrath','Nekara','Zarveth'],
+  // Por especie
+  elfo:     ['Aerdeth','Caelindra','Faelivrin','Galadhon','Ithilwen','Laerindel','Mithrandel','Nimrodel','Orophin','Rúmil','Silindë','Tauriel','Vanyar','Aeriniel','Celebwen','Elenmir','Finduilas','Gilraen','Haldir','Idril'],
+  enano:    ['Balin','Dwalin','Gloin','Oin','Bifur','Bofur','Bombur','Nori','Dori','Ori','Thorin','Fili','Kili','Thordak','Brundar','Helga','Agna','Marta','Dagna','Kerris'],
+  humano:   ['Aldric','Brennan','Cassia','Dorian','Elara','Fabian','Greta','Hadwin','Isolde','Jasper','Kira','Lucan','Maren','Nolen','Orla','Perin','Quinn','Roslin','Sander','Talia'],
+  mediano:  ['Bilbo','Frodo','Samwise','Rosie','Pippin','Merry','Lobelia','Daisy','Hamfast','Pansy','Largo','Ponto','Iris','Lily','Bando','Calla','Fosco','Peony','Rufus','Tanta'],
+  orco:     ['Grak','Thok','Urga','Drak','Morg','Skrag','Grush','Vorg','Kragg','Zug','Ashgara','Bruka','Gorga','Hurga','Krugga','Morgra','Shara','Tugra','Urgath','Yargra'],
+  draconido:['Arjhan','Balasar','Bharash','Donaar','Ghesh','Heskan','Kriv','Medrash','Mehen','Nadarr','Pandjed','Patrin','Rhogar','Shamash','Shedinn','Tarhun','Torinn','Uadjit','Vishap','Zedaar'],
+  aasimar:  ['Adiel','Amenadiel','Auriel','Castiel','Eliziel','Gavriel','Israelis','Mikhael','Nathanael','Raziel','Saraqael','Tzadkiel','Uriel','Zadkiel','Zaphkiel','Anael','Baraqiel','Camael','Danel','Eremiel'],
+  tiefling: ['Akta','Bryseis','Damaia','Ea','Kallista','Lerissa','Makaria','Nemeia','Orianna','Phelaia','Rieta','Takacha','Tepherial','Vairë','Yrre','Zagash','Zarcha','Zovira','Criella','Raven'],
+  gnomo:    ['Alston','Alvyn','Boddynock','Brocc','Burgell','Dimble','Eldon','Erky','Fonkin','Frug','Gerbo','Gimble','Glim','Jebeddo','Kellen','Namfoodle','Orryn','Roondar','Seebo','Sindri'],
+  goliat:   ['Aukan','Eglath','Gae-Al','Gauthak','Ilikan','Keothi','Kuori','Lo-Kag','Manneo','Maveith','Nalla','Orilo','Paavu','Pethani','Thalai','Thotham','Uthal','Vaunea','Vimak','Vola'],
+  // Por clase
+  guerrero: ['Aldric','Brennan','Gorin','Hadwin','Kastor','Lucan','Maren','Orin','Perin','Rolan','Sander','Tarvek','Aldred','Borik','Calen','Davan','Ektor','Falken','Garon','Havel'],
+  mago:     ['Aelindra','Calix','Daevon','Elara','Farix','Galen','Helios','Iriel','Jalindra','Kiran','Lyram','Mira','Nixol','Oryn','Phaedra','Quirin','Raelia','Sivix','Talix','Umbris'],
+  picaro:   ['Ash','Brynn','Cass','Dex','Elara','Finn','Ghost','Hex','Iris','Jax','Kira','Lyss','Mace','Nix','Onyx','Pip','Quinn','Rook','Shade','Trix'],
+  paladin:  ['Alduin','Brennus','Caelum','Davian','Edric','Flavian','Galahad','Hadric','Idris','Justus','Kaelum','Lucian','Markus','Nathan','Octavius','Persius','Quintus','Remus','Serius','Titus'],
+  brujo:    ['Aelith','Blackthorn','Corvus','Dareth','Echidna','Famine','Gloom','Hex','Ignis','Jorah','Kael','Lirien','Mortis','Nox','Obsidian','Plague','Quoth','Raven','Shadow','Umbra'],
+  druida:   ['Acorn','Birch','Cedar','Dewdrop','Elm','Fern','Glen','Hazel','Ivy','Juniper','Kelp','Larch','Moss','Nettle','Oak','Pine','Quill','Reed','Sage','Thorn'],
+  // Por género
+  masculino:['Aldric','Bram','Castor','Dorian','Edric','Fabian','Gareth','Hadwin','Idris','Jasper','Kiran','Lucan','Maren','Nolen','Oswin','Perin','Quinn','Rolan','Sander','Torben'],
+  femenino: ['Aelindra','Brynn','Cass','Daisy','Elara','Fern','Greta','Hana','Iris','Jade','Kira','Lena','Mira','Nyx','Orla','Phaedra','Quinn','Reva','Senna','Talia'],
+  neutro:   ['Ash','Blaze','Cedar','Dawn','Echo','Frost','Glen','Hex','Iris','Jade','Kelp','Lark','Moss','Nix','Oak','Pine','Quinn','Reed','Sage','Thorn'],
+};
+
+const SPECIES = [
+  {
+    id:'aasimar', icon:'😇', name:'Aasimar', tag:'Celestial',
+    desc:'Mortales con una chispa de los Planos Superiores. Rasgos celestiales sutiles: pecas metálicas, ojos brillantes o un halo.',
+    size:'Mediano o Pequeño', speed:'9 m', type:'Humanoide',
+    languages:['Común','Celestial'],
+    traits:[
+      { n:'Manos curativas', d:'Como acción de magia, tocas a una criatura y tiras d4 × tu bonificador por competencia. Recupera esos PG. Recarga en descanso largo.' },
+      { n:'Portador de luz', d:'Conoces el truco Luz. El Carisma es tu aptitud mágica.' },
+      { n:'Resistencia celestial', d:'Tienes resistencia al daño necrótico y radiante.' },
+      { n:'Visión en la oscuridad', d:'Ves hasta 18 m en oscuridad como si fuera luz tenue.' },
+      { n:'Revelación celestial (nv. 3)', d:'Como acción adicional te transformas 1 min (1 vez/descanso largo): Alas celestiales (vuelo = velocidad), Fulgor interior (luz 3 m, daño radiante = bonif. competencia) o Mortaja necrótica (miedo en CD 8+CAR+comp).' },
+    ],
+  },
+  {
+    id:'draconido', icon:'🐉', name:'Dracónido', tag:'Dracónico',
+    desc:'Descendientes de dragones cromáticos y metálicos. Bípedos escamosos con cuernos que recuerdan a sus ancestros.',
+    size:'Mediano', speed:'9 m', type:'Humanoide',
+    languages:['Común','Dracónico'],
+    traits:[
+      { n:'Linaje dracónico', d:'Elige un tipo de dragón (azul, blanco, bronce, cobre, negro, rojo, verde, oro, oropel, plata). Determina tu tipo de daño.' },
+      { n:'Ataque de aliento', d:'Sustituyes un ataque por un cono de 4,5 m o línea de 9 m. Tirada salvación DES (CD 8+CON+comp) o 1d10 daño (escala con nivel). Usos = bonif. competencia. Recarga descanso largo.' },
+      { n:'Resistencia al daño', d:'Tienes resistencia al tipo de daño de tu linaje dracónico.' },
+      { n:'Visión en la oscuridad', d:'Ves hasta 18 m en oscuridad como si fuera luz tenue.' },
+      { n:'Vuelo dracónico (nv. 5)', d:'Como acción adicional, alas espectrales 10 min. Velocidad volando = velocidad. 1 vez/descanso largo.' },
+    ],
+  },
+  {
+    id:'elfo', icon:'🌿', name:'Elfo', tag:'Feérico',
+    desc:'Creados por el dios Corellon. Orejas puntiagudas, sin vello facial. Viven ~750 años. En lugar de dormir, entran en trance consciente.',
+    size:'Mediano', speed:'9 m', type:'Humanoide (elfo)',
+    languages:['Común','Élfico'],
+    traits:[
+      { n:'Linaje feérico', d:'Tienes ventaja en las tiradas de salvación para evitar o acabar con el estado de hechizado y la magia no puede hacerte dormir.' },
+      { n:'Sentidos agudos', d:'Tienes competencia en la habilidad Percepción.' },
+      { n:'Trance', d:'No necesitas dormir. En cambio, meditas 4 h (equivale a 8 h de sueño). Mientras meditas eres consciente del entorno.' },
+      { n:'Subtipo élfico', d:'Elige entre Alto elfo (truco de mago + idioma adicional), Elfo de los bosques (velocidad 10,5 m + esconderte en naturaleza) o Drow (visión oscuridad 36 m + conjuros innatos de oscuridad feérica y faerie fire desde nv. 3 y 5).' },
+    ],
+  },
+  {
+    id:'enano', icon:'⛏️', name:'Enano', tag:'Resistente',
+    desc:'Pueblo resistente y artesano. Entre 1,2 y 1,5 m de altura, robustos. Viven ~350 años. Aprecian la tradición y el clan.',
+    size:'Mediano', speed:'9 m', type:'Humanoide',
+    languages:['Común','Enano'],
+    traits:[
+      { n:'Visión en la oscuridad', d:'Ves hasta 18 m en oscuridad como si fuera luz tenue.' },
+      { n:'Resistencia enana', d:'Tienes ventaja en las tiradas de salvación contra veneno y resistencia al daño por veneno.' },
+      { n:'Tenacidad enana', d:'Tu máximo de PG aumenta en 1 por cada nivel de personaje.' },
+      { n:'Competencia con herramientas enanas', d:'Competencia con herramientas de artesano de tu elección: calderero, cantero o herrero.' },
+      { n:'Subtipo enano', d:'Enano de las colinas (Sabiduría +1, PG adicionales) o Enano de las montañas (entrenamiento con armaduras ligeras y medias).' },
+    ],
+  },
+  {
+    id:'gnomo', icon:'🔮', name:'Gnomo', tag:'Ingenioso',
+    desc:'Pequeños y curiosos, entre 90 cm y 1,1 m. Viven ~500 años. Inventivos, entusiastas y con una chispa de magia innata.',
+    size:'Pequeño', speed:'9 m', type:'Humanoide',
+    languages:['Común','Gnomo'],
+    traits:[
+      { n:'Astucia gnoma', d:'Ventaja en todas las tiradas de salvación de Inteligencia, Sabiduría y Carisma contra magia.' },
+      { n:'Subtipo gnomo', d:'Gnomo de las rocas (conocimiento mágico, componentes artificiales) o Gnomo de los bosques (truco menor, comunicarse con animales pequeños).' },
+    ],
+  },
+  {
+    id:'goliat', icon:'🏔️', name:'Goliat', tag:'Colosal',
+    desc:'Gigantes del mundo montañoso, entre 2,1 y 2,7 m. Competitivos por naturaleza, con marcas pétreas en la piel.',
+    size:'Mediano', speed:'9 m', type:'Humanoide (gigante)',
+    languages:['Común','Gigante'],
+    traits:[
+      { n:'Forma de gigante de piedra', d:'Como acción adicional, activas una de estas opciones (1 vez/descanso corto): Rebufo de la tormenta de montaña (empujas criatura 3 m + no cae), Golpe potente (daño adicional 1d10) o Poderosa resistencia (reduces daño recibido hasta la mitad).' },
+      { n:'Portador de gigante', d:'Puedes transportar el doble del límite normal de carga.' },
+      { n:'Tamaño grande', d:'Puedes equiparte con armas diseñadas para criaturas de tamaño Grande sin desventaja.' },
+    ],
+  },
+  {
+    id:'humano', icon:'⚔️', name:'Humano', tag:'Versátil',
+    desc:'La especie más adaptable del multiverso. Ambiciosos y persistentes, con una longevidad modesta pero una voluntad excepcional.',
+    size:'Mediano o Pequeño', speed:'9 m', type:'Humanoide',
+    languages:['Común','uno adicional a elegir'],
+    traits:[
+      { n:'Dote de origen', d:'Obtienes una dote de origen adicional al crear el personaje. Esto convierte a los humanos en la especie más versátil desde el nivel 1.' },
+      { n:'Talento heroico', d:'Eres competente en una habilidad adicional de tu elección.' },
+    ],
+  },
+  {
+    id:'mediano', icon:'🍀', name:'Mediano', tag:'Afortunado',
+    desc:'Entre 90 cm y 1,1 m de altura. Amantes del hogar y la comodidad, pero con una valentía sorprendente cuando se los necesita.',
+    size:'Pequeño', speed:'7,5 m', type:'Humanoide',
+    languages:['Común','Mediano'],
+    traits:[
+      { n:'Valentía', d:'Ventaja en las tiradas de salvación para evitar o acabar con el estado de asustado.' },
+      { n:'Agilidad mediana', d:'Puedes moverte por el espacio de cualquier criatura de tamaño mayor que tú.' },
+      { n:'Suerte', d:'Cuando sacas un 1 en un d20 para una prueba de característica, tirada de ataque o tirada de salvación, puedes repetir el dado y debes usar el nuevo resultado.' },
+      { n:'Sigilo natural', d:'Puedes intentar esconderte cuando estás oscurecido solo por una criatura de tamaño Grande o mayor.' },
+    ],
+  },
+  {
+    id:'orco', icon:'💪', name:'Orco', tag:'Implacable',
+    desc:'Fuertes y resistentes, de complexión poderosa. Muchos abrazan la aventura como modo de vida y forjan su propio destino.',
+    size:'Mediano', speed:'9 m', type:'Humanoide',
+    languages:['Común','Orco'],
+    traits:[
+      { n:'Resistencia implacable', d:'Cuando caerías a 0 PG, en cambio caes a 1 PG. 1 vez/descanso largo.' },
+      { n:'Visión en la oscuridad', d:'Ves hasta 18 m en oscuridad como si fuera luz tenue.' },
+      { n:'Fortaleza agressiva', d:'Cuando llevas a cabo la acción Atacar, puedes usar una acción adicional para Empujar a una criatura.' },
+    ],
+  },
+  {
+    id:'tiefling', icon:'😈', name:'Tiefling', tag:'Infernal',
+    desc:'Descendientes de seres infernales. Cuernos, cola y ojos sólidos. Resistentes al fuego, con magia innata oscura.',
+    size:'Mediano o Pequeño', speed:'9 m', type:'Humanoide',
+    languages:['Común','Infernal'],
+    traits:[
+      { n:'Herencia infernal', d:'Elige un linaje infernal que otorga conjuros innatos según tu nivel (trucos y conjuros de Tematik, Zariel, Glasya, Levistus, Fierna, Belial, Dispater o Mephistopheles).' },
+      { n:'Resistencia al fuego', d:'Tienes resistencia al daño de fuego.' },
+      { n:'Visión en la oscuridad', d:'Ves hasta 18 m en oscuridad como si fuera luz tenue.' },
+    ],
+  },
+];
+
+const CLASSES = [
+  {
+    id:'barbaro', icon:'🪓', name:'Bárbaro', tag:'Furia',
+    stat_main:'Fuerza', complejidad:'Media', dado_pg:'d12',
+    pg_nv1:'12 + mod CON', armadura_base:'10 + DES + CON (sin armadura)',
+    salvaciones:['Fuerza','Constitución'],
+    armas:'Armas sencillas y marciales',
+    armaduras_comp:'Ligeras, medias y escudos',
+    habilidades_elegir: 2,
+    habilidades_lista:['Atletismo','Intimidación','Naturaleza','Percepción','Supervivencia','Trato con animales'],
+    desc:'La fuerza primigenia del multiverso canalizada como furia. Resistencia al daño, ventaja en Fuerza y un poder demoledor en combate cuerpo a cuerpo.',
+    rasgos_nv1:[
+      { n:'Furia', d:'Acción adicional para entrar en furia. Resistencia al daño contundente/cortante/perforante, ventaja en pruebas y salvaciones de Fuerza, daño adicional en ataques de Fuerza. Dura hasta el final de tu siguiente turno (prorrogable). No puedes concentrarte ni lanzar conjuros.' },
+      { n:'Defensa sin armadura', d:'Sin armadura: CA = 10 + mod DES + mod CON.' },
+      { n:'Maestría con armas', d:'Usa las propiedades de maestría con 2 armas cuerpo a cuerpo de tu elección.' },
+    ],
+    equipo:[['Hacha a dos manos, 4 hachas de mano, paquete de explorador, 15 po','75 po']],
+  },
+  {
+    id:'bardo', icon:'🎵', name:'Bardo', tag:'Magia·Social',
+    stat_main:'Carisma', complejidad:'Alta', dado_pg:'d8',
+    pg_nv1:'8 + mod CON', armadura_base:'10 + DES (o armadura ligera)',
+    salvaciones:['Destreza','Carisma'],
+    armas:'Armas sencillas, ballesta de mano, espada corta, espada larga, estoque',
+    armaduras_comp:'Ligeras',
+    habilidades_elegir: 3,
+    habilidades_lista:['Cualquier habilidad'],
+    desc:'Arte, música y magia entrelazados. Lista de conjuros versátil, Inspiración bárdica para aliados y habilidades sociales incomparables.',
+    rasgos_nv1:[
+      { n:'Lanzamiento de conjuros', d:'Aptitud mágica: Carisma. Trucos: 2. Conjuros preparados: 4. Espacios de nivel 1: 2.' },
+      { n:'Inspiración bárdica', d:'Acción adicional: otorgas un dado de Inspiración bárdica (d6) a una criatura que pueda oírte. La criatura puede añadir ese dado a una prueba de característica, tirada de ataque o tirada de salvación. Usos = mod CAR (mínimo 1). Recarga tras descanso largo.' },
+    ],
+    equipo:[['Estoque o espada larga o cualquier arma sencilla, paquete de diplomático o de entretenedor, laúd u otro instrumento musical, cuero, 26 po','100 po']],
+  },
+  {
+    id:'brujo', icon:'🌑', name:'Brujo', tag:'Pacto·Ocultismo',
+    stat_main:'Carisma', complejidad:'Alta', dado_pg:'d8',
+    pg_nv1:'8 + mod CON', armadura_base:'10 + DES (o armadura ligera)',
+    salvaciones:['Sabiduría','Carisma'],
+    armas:'Armas sencillas',
+    armaduras_comp:'Ligeras',
+    habilidades_elegir: 2,
+    habilidades_lista:['Historia','Engaño','Naturaleza','Conocimiento arcano','Perspicacia','Investigación','Intimidación','Religión'],
+    desc:'Poder otorgado por un patrón sobrenatural. Espacios de conjuro limitados que se recuperan en descanso corto, invocaciones y un arma de pacto única.',
+    rasgos_nv1:[
+      { n:'Magia del pacto', d:'Aptitud mágica: Carisma. Trucos: 2. Conjuros preparados: 2. Espacios de nivel 1: 1 (recarga en descanso corto o largo). CD conjuros = 8+CAR+comp.' },
+      { n:'Invocaciones sobrenaturales', d:'Aprenderás invocaciones que potencian tu magia del pacto. Comienzas con 1 invocación.' },
+    ],
+    equipo:[['Arma sencilla o ballesta de mano con 20 virotes, paquete de erudito o de mazmorrero, arcano u otro foco arcano, cuero, 15 po','100 po']],
+  },
+  {
+    id:'clerigo', icon:'⛪', name:'Clérigo', tag:'Divino·Curación',
+    stat_main:'Sabiduría', complejidad:'Media', dado_pg:'d8',
+    pg_nv1:'8 + mod CON', armadura_base:'Según armadura equipada',
+    salvaciones:['Sabiduría','Carisma'],
+    armas:'Armas sencillas',
+    armaduras_comp:'Ligeras, medias, escudos',
+    habilidades_elegir: 2,
+    habilidades_lista:['Historia','Medicina','Perspicacia','Persuasión','Religión'],
+    desc:'Canal de poder divino. Curación, conjuros de dominio, capacidad de llevar armadura pesada (con algunos dominios) y un rol central en el grupo.',
+    rasgos_nv1:[
+      { n:'Lanzamiento de conjuros', d:'Aptitud mágica: Sabiduría. Trucos: 3. Conjuros preparados: SAB + nivel clérigo. Espacios de nivel 1: 2.' },
+      { n:'Rasgo de dominio', d:'Tu dominio divino elegido otorga competencias o poderes adicionales desde el nivel 1.' },
+    ],
+    equipo:[['Maza o cualquier arma sencilla, escudo, símbolo sagrado, paquete de sacerdote, escama o cota de malla (si competente), 7 po','110 po']],
+  },
+  {
+    id:'druida', icon:'🌲', name:'Druida', tag:'Naturaleza·Magia',
+    stat_main:'Sabiduría', complejidad:'Alta', dado_pg:'d8',
+    pg_nv1:'8 + mod CON', armadura_base:'Según armadura (no metálica)',
+    salvaciones:['Inteligencia','Sabiduría'],
+    armas:'Garrotes, dagas, dardos, jabalinas, mazas, bastones, cimitarras, hoces, hondas, lanzas',
+    armaduras_comp:'Ligeras, medias, escudos (no metálicos)',
+    habilidades_elegir: 2,
+    habilidades_lista:['Conocimiento arcano','Medicina','Naturaleza','Percepción','Perspicacia','Religión','Supervivencia','Trato con animales'],
+    desc:'Guardián de la naturaleza y sus ciclos. Forma salvaje para transformarse en animales, amplia lista de conjuros y un vínculo profundo con el mundo natural.',
+    rasgos_nv1:[
+      { n:'Lanzamiento de conjuros', d:'Aptitud mágica: Sabiduría. Trucos: 2. Conjuros preparados: SAB + nivel druida. Espacios de nivel 1: 2.' },
+      { n:'Forma salvaje', d:'Como acción adicional, te transformas en un animal de CR hasta 1/4 (sin velocidad de vuelo o nado). 2 usos, recarga en descanso corto. Conservas tu puntuación de INT, SAB y CAR.' },
+    ],
+    equipo:[['Escudo de madera o cualquier arma sencilla, foco druídico, paquete de explorador, cuero, 9 po','50 po']],
+  },
+  {
+    id:'explorador', icon:'🏹', name:'Explorador', tag:'Supervivencia',
+    stat_main:'Destreza / Sabiduría', complejidad:'Media', dado_pg:'d10',
+    pg_nv1:'10 + mod CON', armadura_base:'Según armadura equipada',
+    salvaciones:['Fuerza','Destreza'],
+    armas:'Armas sencillas y marciales',
+    armaduras_comp:'Ligeras, medias, escudos',
+    habilidades_elegir: 3,
+    habilidades_lista:['Atletismo','Perspicacia','Investigación','Naturaleza','Percepción','Sigilo','Supervivencia','Trato con animales'],
+    desc:'Maestro de la supervivencia y la caza. Combina destreza marcial, magia de la naturaleza y habilidades de exploración con una especialidad elegida.',
+    rasgos_nv1:[
+      { n:'Presa predilecta', d:'Eliges un tipo de enemigo predilecto (aberraciones, bestias, celestiales, constructos, dragones, elementales, feéricos, gigantes, monstruosidades, muertos vivientes, plantas u humanoides). Ventaja en tiradas de rastreo/recuerdo.' },
+      { n:'Maestría con armas', d:'Usa propiedades de maestría con 2 armas de tu elección.' },
+      { n:'Lanzamiento de conjuros (nv. 2)', d:'Aprenderás conjuros de explorador desde el nivel 2.' },
+    ],
+    equipo:[['Espada larga o 2 hachas de mano, paquete de explorador, cota de escamas, espada corta, 15 po','150 po']],
+  },
+  {
+    id:'guerrero', icon:'🛡️', name:'Guerrero', tag:'Marcial',
+    stat_main:'Fuerza o Destreza', complejidad:'Baja', dado_pg:'d10',
+    pg_nv1:'10 + mod CON', armadura_base:'Según armadura equipada',
+    salvaciones:['Fuerza','Constitución'],
+    armas:'Armas sencillas y marciales',
+    armaduras_comp:'Todas las armaduras y escudos',
+    habilidades_elegir: 2,
+    habilidades_lista:['Acrobacias','Atletismo','Historia','Perspicacia','Intimidación','Percepción','Persuasión','Supervivencia'],
+    desc:'El maestro de las armas. Segundo aliento para recuperarse, Acción adicional para atacar más y el mayor número de ataques por turno del juego.',
+    rasgos_nv1:[
+      { n:'Maestría con armas', d:'Usa propiedades de maestría con 3 armas de tu elección.' },
+      { n:'Segundo aliento', d:'Acción adicional: recuperas PG = 1d10 + nivel guerrero. 2 usos, recarga en descanso corto.' },
+      { n:'Estilo de combate', d:'Elige un estilo: Arquería (+2 a tiradas de ataque a distancia), Defensa (+1 CA con armadura), Duelo (+2 daño c/c con arma a 1 mano), Gran arma (repites 1s y 2s en daño c/c a 2 manos), Protección (reacción: imponer desventaja al atacante de aliado), o Combate con dos armas.' },
+    ],
+    equipo:[['Cota de malla o cuero y 2 dagas, ballesta pesada con 20 virotes o arma marcial y escudo, paquete de mazmorrero o de explorador, 4 po','175 po']],
+  },
+  {
+    id:'hechicero', icon:'✨', name:'Hechicero', tag:'Magia innata',
+    stat_main:'Carisma', complejidad:'Alta', dado_pg:'d6',
+    pg_nv1:'6 + mod CON', armadura_base:'10 + DES',
+    salvaciones:['Constitución','Carisma'],
+    armas:'Dagas, dardos, hondas, bastones, ballestas de mano',
+    armaduras_comp:'Ninguna',
+    habilidades_elegir: 2,
+    habilidades_lista:['Conocimiento arcano','Engaño','Perspicacia','Intimidación','Persuasión','Religión'],
+    desc:'La magia corre por tu sangre. Puntos de hechicería para crear espacios de conjuro o potenciar hechizos con metamagia, y un origen sobrenatural que define tu poder.',
+    rasgos_nv1:[
+      { n:'Lanzamiento de conjuros', d:'Aptitud mágica: Carisma. Trucos: 4. Conjuros conocidos: 2. Espacios de nivel 1: 2.' },
+      { n:'Magia innata', d:'Tu origen mágico (linaje dracónico, magia salvaje, etc.) otorga rasgos adicionales desde el nivel 1.' },
+    ],
+    equipo:[['Ballesta de mano con 20 virotes o 2 dagas, paquete de mazmorrero o de explorador, arcano u otro foco, 28 po','100 po']],
+  },
+  {
+    id:'mago', icon:'📚', name:'Mago', tag:'Arcano·Estudio',
+    stat_main:'Inteligencia', complejidad:'Media', dado_pg:'d6',
+    pg_nv1:'6 + mod CON', armadura_base:'10 + DES',
+    salvaciones:['Inteligencia','Sabiduría'],
+    armas:'Dagas, dardos, hondas, bastones, ballestas de mano',
+    armaduras_comp:'Ninguna',
+    habilidades_elegir: 2,
+    habilidades_lista:['Historia','Conocimiento arcano','Perspicacia','Investigación','Medicina','Religión'],
+    desc:'El erudito de la magia arcana. Libro de conjuros con la lista más amplia del juego. Recuperación arcana para recuperar espacios y dominio de la magia a través del estudio.',
+    rasgos_nv1:[
+      { n:'Lanzamiento de conjuros', d:'Aptitud mágica: Inteligencia. Trucos: 3. Conjuros en el libro: 6. Conjuros preparados: INT + nivel mago. Espacios de nivel 1: 2.' },
+      { n:'Libro de conjuros', d:'Copias conjuros en él. Puedes copiar conjuros nuevos encontrados en aventuras.' },
+      { n:'Recuperación arcana', d:'Una vez al día (descando corto), recuperas espacios de conjuro gastados totalizando hasta la mitad de tu nivel (mínimo 1, no espacios de nivel 6+).' },
+    ],
+    equipo:[['Bastón o daga, paquete de erudito o de explorador, libro de conjuros, 5 po','110 po']],
+  },
+  {
+    id:'monje', icon:'👊', name:'Monje', tag:'Artes marciales',
+    stat_main:'Destreza / Sabiduría', complejidad:'Alta', dado_pg:'d8',
+    pg_nv1:'8 + mod CON', armadura_base:'10 + DES + SAB (sin armadura)',
+    salvaciones:['Fuerza','Destreza'],
+    armas:'Armas sencillas y espadas cortas',
+    armaduras_comp:'Ninguna',
+    habilidades_elegir: 2,
+    habilidades_lista:['Acrobacias','Atletismo','Historia','Perspicacia','Religión','Sigilo'],
+    desc:'Maestro del cuerpo y la mente. Sin armadura, ki para potenciar ataques y movimientos, el mayor movimiento base y golpes devastadoramente rápidos.',
+    rasgos_nv1:[
+      { n:'Artes marciales', d:'Ataques sin armas o con armas de monje usan d6 (sin Fuerza), puedes usar DEStreza en su lugar, y como acción adicional puedes hacer un ataque sin armas adicional.' },
+      { n:'Defensa sin armadura', d:'Sin armadura ni escudo: CA = 10 + mod DES + mod SAB.' },
+      { n:'Maestría con armas (nv. 1)', d:'Usa propiedades de maestría con 2 armas de monje de tu elección.' },
+    ],
+    equipo:[['Espada corta o cualquier arma sencilla, paquete de mazmorrero o de explorador, 11 po','65 po']],
+  },
+  {
+    id:'paladin', icon:'✝️', name:'Paladín', tag:'Divino·Marcial',
+    stat_main:'Fuerza / Carisma', complejidad:'Media', dado_pg:'d10',
+    pg_nv1:'10 + mod CON', armadura_base:'Según armadura equipada',
+    salvaciones:['Sabiduría','Carisma'],
+    armas:'Armas sencillas y marciales',
+    armaduras_comp:'Todas las armaduras y escudos',
+    habilidades_elegir: 2,
+    habilidades_lista:['Atletismo','Historia','Perspicacia','Intimidación','Medicina','Persuasión','Religión'],
+    desc:'Guerrero sagrado impulsado por un juramento. Imposición de manos, aura de protección, conjuros divinos y el devastador Smite divino en combate.',
+    rasgos_nv1:[
+      { n:'Imposición de manos', d:'Piscina de curación = nivel paladín × 5. Como acción, curas PG o curas enfermedades/venenos (gasta 5 PG).' },
+      { n:'Maestría con armas', d:'Usa propiedades de maestría con 2 armas de tu elección.' },
+      { n:'Preparación divina', d:'Tu dedicación te prepara para el juramento que harás en el nivel 3.' },
+    ],
+    equipo:[['Arma marcial y escudo o 2 armas marciales, 5 jabalinas, paquete de sacerdote o de explorador, cota de malla, símbolo sagrado, 9 po','150 po']],
+  },
+  {
+    id:'picaro', icon:'🗡️', name:'Pícaro', tag:'Sigilo·Precisión',
+    stat_main:'Destreza', complejidad:'Baja', dado_pg:'d8',
+    pg_nv1:'8 + mod CON', armadura_base:'Según armadura ligera',
+    salvaciones:['Destreza','Inteligencia'],
+    armas:'Armas sencillas, ballesta de mano, espada larga, estoque, espada corta',
+    armaduras_comp:'Ligeras',
+    habilidades_elegir: 4,
+    habilidades_lista:['Acrobacias','Atletismo','Engaño','Historia','Perspicacia','Intimidación','Investigación','Percepción','Actuación','Persuasión','Juego de manos','Sigilo'],
+    desc:'Maestro del sigilo y el golpe preciso. Ataque furtivo para daño masivo, Esquiva ágil para evitar daños y Pericia para dominar habilidades como nadie más.',
+    rasgos_nv1:[
+      { n:'Pericia', d:'Elige 2 habilidades (o 1 y herramientas de ladrón) en las que seas competente: duplicas el bonificador por competencia.' },
+      { n:'Ataque furtivo', d:'1 vez/turno, si tienes ventaja o un aliado adyacente al objetivo, añades 1d6 de daño adicional (escala con nivel).' },
+      { n:'Jerga de ladrones', d:'Conoces la jerga de ladrones para comunicarte en clave.' },
+      { n:'Maestría con armas', d:'Usa propiedades de maestría con 2 armas de tu elección.' },
+    ],
+    equipo:[['Estoque y daga o 2 dagas, ballesta de mano con 20 virotes, herramientas de ladrón, paquete de mazmorrero o de explorador, cuero, 8 po','100 po']],
+  },
+];
+
+const SUBCLASSES = {
+  barbaro: [
+    { n:'Senda del Árbol del Mundo', icon:'🌳', d:'Te conectas con los árboles cósmicos del multiverso. Puedes moverte entre árboles, canalizar vitalidad cósmica y hablar con las plantas.' },
+    { n:'Senda del Berserker', icon:'🔥', d:'La violencia pura. En furia puedes hacer ataques adicionales como acción adicional y volverte Intimidante, con resistencia a la magia del miedo.' },
+    { n:'Senda del Corazón Salvaje', icon:'🐺', d:'Tu espíritu animal guía tu furia. Eliges una naturaleza animal que otorga velocidades adicionales o ataques especiales mientras estás en furia.' },
+    { n:'Senda del Fanático', icon:'⚡', d:'Tu furia está consagrada a un dios. Obtienes conjuros de dominio divino, poder para invocar la cólera divina y resistencia durante la furia.' },
+  ],
+  bardo: [
+    { n:'Colegio de la Danza', icon:'💃', d:'Usas tu agilidad como arma. Puedes atacar como parte de acciones de movimiento, usar Inspiración para movimiento adicional y potenciar aliados en danza.' },
+    { n:'Colegio del Conocimiento', icon:'📜', d:'Sabes un poco de todo. Bonificador de corte para reducir tiradas enemigas, competencias adicionales y más conjuros de cualquier lista.' },
+    { n:'Colegio del Glamour', icon:'🌸', d:'Magia seductora de los Parajes Feéricos. Puedes fascinar criaturas, mover aliados y crear un aura de majestad que dificulta que te ataquen.' },
+    { n:'Colegio del Valor', icon:'⚔️', d:'Bardo guerrero. Inspiración que mejora tiradas de daño, competencia con armaduras medias, escudos y armas marciales, y ataque adicional.' },
+  ],
+  brujo: [
+    { n:'Patrón Celestial', icon:'☀️', d:'Tu patrón es un ser de luz. Obtienes conjuros de curación, la capacidad de curar con Magia del pacto y un dado de curación en descanso corto.' },
+    { n:'Patrón Feérico', icon:'🧚', d:'Un ser de los Parajes Feéricos te otorga poder. Puedes teletransportarte, usar encantamientos poderosos y reducir al tamaño Pequeño a enemigos.' },
+    { n:'Patrón Infernal', icon:'👿', d:'Un archidiablo te concede su poder. PG temporales cuando derrotas enemigos, conjuros de engaño y fuego, y resistencia al fuego.' },
+    { n:'Patrón Primigenio', icon:'🌀', d:'Una entidad de conocimiento prohibido. Telepatía, acceso a conjuros de detección y acceso al Libro de las sombras con tres conjuros adicionales.' },
+  ],
+  clerigo: [
+    { n:'Dominio de la Guerra', icon:'⚔️', d:'Dios de la batalla. Competencia con armaduras pesadas y armas marciales. Puedes atacar como reacción (Golpe guiado) y potenciar aliados en combate.' },
+    { n:'Dominio de la Luz', icon:'✨', d:'Dios solar o del fuego. Conjuros de fuego y radiante, un escudo lumínico, columna de fuego y un aura de luz brillante en combate.' },
+    { n:'Dominio de la Vida', icon:'💚', d:'Dios de la sanación. Tus conjuros de curación curan PG adicionales, puedes curar masivamente con Channel Divinity y eres el mejor curandero del juego.' },
+    { n:'Dominio del Engaño', icon:'🃏', d:'Dios de los embustes. Duplicado ilusorio, envenenamiento, pasar sin dejar rastro e invocar sombras. El clérigo más subversivo.' },
+  ],
+  druida: [
+    { n:'Círculo de la Luna', icon:'🌕', d:'La transformación animal como arma. Formas salvajes más poderosas (CR más alto), puedes atacar como acción adicional en forma animal.' },
+    { n:'Círculo de la Tierra', icon:'🌿', d:'La magia del entorno. Conjuros adicionales según el terreno, recuperación natural de espacios de conjuro y resistencia al cansancio.' },
+    { n:'Círculo de las Estrellas', icon:'⭐', d:'El poder de las constelaciones. Forma estelar para bonificadores de combate o curación, mapa estelar como foco y conjuros celestiales.' },
+    { n:'Círculo del Mar', icon:'🌊', d:'La tormenta y las mareas. Convocas tormentas menores, nadas y respiras bajo agua, y puedes maldecir enemigos con el poder del océano.' },
+  ],
+  explorador: [
+    { n:'Acechador en la Penumbra', icon:'🦇', d:'Cazador de la oscuridad. Visión en la oscuridad superior, ataques adicionales en la primera ronda y desapareces en la oscuridad fácilmente.' },
+    { n:'Cazador', icon:'🎯', d:'Versátil y letal. Elige entre Asesino de hordas, Defensor o Cazador de colosos para adaptar tu estilo a cualquier enemigo.' },
+    { n:'Errante Feérico', icon:'🌺', d:'Habitas entre los mundos. Teletransporte a distancia, encantamientos feéricos, bonus a pruebas de Carisma y conjuros del bosque feérico.' },
+    { n:'Señor de las Bestias', icon:'🐻', d:'Tu compañero animal primigenio lucha junto a ti. Lo convocas, lo potencias y compartís el vínculo del depredador.' },
+  ],
+  guerrero: [
+    { n:'Caballero Arcano', icon:'🔮', d:'Guerrero-mago. Aprendes conjuros de mago, especializándote en abjuración y evocación. Tu arma está ligada mágicamente a ti.' },
+    { n:'Campeón', icon:'🏆', d:'La perfección física. Crítico con 19-20, segundo estilo de combate, proezas atléticas superiores. La opción más sencilla y devastadora.' },
+    { n:'Guerrero Psiónico', icon:'🧠', d:'Potencia tus ataques con energía psiónica. Daño adicional, teletransporte táctico y escudo mental contra magia.' },
+    { n:'Maestro del Combate', icon:'📋', d:'Maniobras tácticas que consumen dados de superioridad. Empujar, derribar, desviar golpes y docenas de opciones de combate elegante.' },
+  ],
+  hechicero: [
+    { n:'Hechicería Aberrante', icon:'👁️', d:'Magia de aberraciones del espacio lejano. Daño psiónico adicional, telepatía, conjuros de transmutación mental y resistencia.' },
+    { n:'Hechicería de Magia Salvaje', icon:'🎲', d:'El caos puro. Una oleada de magia puede ocurrir en cualquier momento (tabla de magia salvaje) y puedes forzarla para abrazar el azar.' },
+    { n:'Hechicería Dracónica', icon:'🐲', d:'Sangre de dragón. PG adicionales, escamas que dan CA sin armadura, un tipo de daño de afinidad y alas desde nivel alto.' },
+    { n:'Hechicería Mecánica', icon:'⚙️', d:'Las fuerzas del orden cósmico. Retroceder y avanzar el tiempo en tiradas, conjuros de fuerza potenciados y dominio sobre el destino.' },
+  ],
+  mago: [
+    { n:'Abjurador', icon:'🛡️', d:'El protector. Un escudo mágico que absorbe daño, disipar magia mejorado, resistencia a conjuros y un bastión defensivo para el grupo.' },
+    { n:'Adivino', icon:'🔮', d:'Ve el futuro. Dados de augurio para forzar tiradas altas o bajas, conjuros de detección y la capacidad de prever el peligro.' },
+    { n:'Evocador', icon:'💥', d:'El artillero. Tus conjuros de evocación dañan menos a aliados, puedes moldear el área de tus hechizos y los empujas al máximo de daño.' },
+    { n:'Ilusionista', icon:'🎭', d:'Maestro del engaño. Ilusiones menores de forma gratuita, dar semisustancia a ilusiones, duplicados y un dominio de lo que parece real.' },
+  ],
+  monje: [
+    { n:'Guerrero de la Mano Abierta', icon:'🤲', d:'Dominio del combate sin armas. Puedes derribar, empujar o privar de acciones adicionales con ataques Flurry, y curarte con Quietud de la mente.' },
+    { n:'Guerrero de la Misericordia', icon:'💊', d:'Sanar o dañar con el mismo toque. Aprende medicina y perspicacia, tus agujas de ki curan o envenenan según elijas.' },
+    { n:'Guerrero de la Sombra', icon:'🌑', d:'Las sombras son tu hogar. Teletransporte en la oscuridad, sigiloso natural, pasos sombríos y ataques desde la penumbra.' },
+    { n:'Guerrero de los Elementos', icon:'🌊', d:'Canaliza los cuatro elementos. Ataques envueltos en fuego, agua, tierra o aire con efectos adicionales según el elemento elegido.' },
+  ],
+  paladin: [
+    { n:'Juramento de Entrega', icon:'👼', d:'Emulas a los ángeles. Conjuros de curación y radiante, aura que otorga ventaja en pruebas de salvación al grupo y un smite sagrado.' },
+    { n:'Juramento de Gloria', icon:'⭐', d:'La cumbre del heroísmo mortal. Inspiración de batalla, correr sin provocar ataques de oportunidad y un aura que acelera a los aliados.' },
+    { n:'Juramento de los Antiguos', icon:'🌿', d:'Preservar la vida y la alegría. Conjuros feéricos, un aura de resistencia mágica y la capacidad de apresar con enredaderas.' },
+    { n:'Juramento de Venganza', icon:'⚡', d:'Cazador implacable. Juraste perseguir el mal sin descanso. Voto de enemistad para ventaja, abjurar al enemigo y perseguir sin límite.' },
+  ],
+  picaro: [
+    { n:'Asesino', icon:'☠️', d:'Golpe letal antes de que empiecen a reaccionar. Daño automático crítico en sorpresa, disfraces maestros e infiltración perfecta.' },
+    { n:'Embaucador Arcano', icon:'🌀', d:'El ladrón mágico. Aprendes conjuros de mago (encantamiento e ilusión), mano mágica mejorada y puedes lanzar hechizos en tu ataque.' },
+    { n:'Ladrón', icon:'🔓', d:'El intruso supremo. Manos rápidas mejoradas, escalar superficies incluso tumbado, usar objetos mágicos sin requisitos y reflejos de gato.' },
+    { n:'Rebanaalmas', icon:'🧠', d:'Cuchillas psiónicas invisibles. Daño psiónico adicional, escudo mental, teletransporte táctica y ataques que no pueden ser vistos venir.' },
+  ],
+};
+
+const BACKGROUNDS = [
+  {
+    id:'acolito', icon:'🕯️', name:'Acólito', tag:'Religioso',
+    stats:['Inteligencia','Sabiduría','Carisma'], dote:'Iniciado en la magia (clérigo)',
+    skills:['Perspicacia','Religión'], tool:'Suministros de calígrafo',
+    desc:'Serviste en un templo sagrado, aprendiste liturgias y asististe en rituales. El contacto con lo divino marcó tu camino hacia la aventura.',
+    equipo:'Suministros de calígrafo, libro de escritura, ropa de viaje, símbolo sagrado, 10 po',
+  },
+  {
+    id:'animador', icon:'🎭', name:'Animador', tag:'Artista',
+    stats:['Fuerza','Destreza','Carisma'], dote:'Músico',
+    skills:['Acrobacias','Actuación'], tool:'Instrumento musical de tu elección',
+    desc:'Bailarín, acróbata, malabarista o músico: viviste para entretener a las masas y aprender el lenguaje del público.',
+    equipo:'Instrumento musical, 2 disfraces, espejo, maquillaje, 15 po',
+  },
+  {
+    id:'artesano', icon:'⚒️', name:'Artesano', tag:'Gremio',
+    stats:['Fuerza','Destreza','Inteligencia'], dote:'Habilidoso',
+    skills:['Perspicacia','Persuasión'], tool:'Herramientas de artesano (a elegir)',
+    desc:'Miembro de un gremio, maestro de tu oficio. Las redes comerciales y la reputación de tu trabajo te abrieron puertas que el acero no puede.',
+    equipo:'Herramientas de artesano, carta del gremio, ropa de viaje, 15 po',
+  },
+  {
+    id:'campesino', icon:'🌾', name:'Campesino', tag:'Rural',
+    stats:['Fuerza','Constitución','Sabiduría'], dote:'Duro',
+    skills:['Naturaleza','Trato con animales'], tool:'Herramientas de carpintero',
+    desc:'Criado en el campo, aprendiste a trabajar la tierra y a sobrevivir con poco. La vida sencilla te dio una resistencia que pocos aventureros poseen.',
+    equipo:'Hoz, herramientas de carpintero, pala, ropa de trabajo, 5 po',
+  },
+  {
+    id:'charlatan', icon:'🃏', name:'Charlatán', tag:'Embaucador',
+    stats:['Destreza','Constitución','Carisma'], dote:'Habilidoso',
+    skills:['Engaño','Juego de manos'], tool:'Kit de disfraz',
+    desc:'Viviste de tu labia y tus dedos ágiles. Siempre supiste qué quería escuchar la gente… y se lo diste, a cambio de algo.',
+    equipo:'Kit de disfraz, herramientas de falsificación, 15 po',
+  },
+  {
+    id:'criminal', icon:'🔐', name:'Criminal', tag:'Clandestino',
+    stats:['Destreza','Constitución','Inteligencia'], dote:'Alerta',
+    skills:['Engaño','Sigilo'], tool:'Herramientas de ladrón',
+    desc:'Te buscabas la vida en los callejones oscuros. Quizá fue necesidad, quizá elección, pero aprendiste a sobrevivir donde la ley no llega.',
+    equipo:'Herramientas de ladrón, traje oscuro, capucha, 15 po',
+  },
+  {
+    id:'ermitano', icon:'🏕️', name:'Ermitaño', tag:'Solitario',
+    stats:['Constitución','Sabiduría','Carisma'], dote:'Sanador',
+    skills:['Medicina','Religión'], tool:'Útiles de herborista',
+    desc:'Viviste en soledad y reflexión, lejos de la civilización. El silencio te enseñó más de lo que cualquier maestra hubiera podido.',
+    equipo:'Bastón, útiles de herborista, diario de meditación, aceite de lámpara, ropa de viaje, 5 po',
+  },
+  {
+    id:'erudito', icon:'📖', name:'Erudito', tag:'Académico',
+    stats:['Constitución','Inteligencia','Sabiduría'], dote:'Iniciado en la magia (mago)',
+    skills:['Conocimiento arcano','Historia'], tool:'Suministros de calígrafo',
+    desc:'Dedicaste años al estudio en una biblioteca o academia. Tus preguntas sobre el multiverso te llevaron más allá de los libros.',
+    equipo:'Suministros de calígrafo, libro, 10 po',
+  },
+  {
+    id:'escriba', icon:'✒️', name:'Escriba', tag:'Archivero',
+    stats:['Destreza','Inteligencia','Sabiduría'], dote:'Habilidoso',
+    skills:['Conocimiento arcano','Historia'], tool:'Suministros de calígrafo',
+    desc:'Copiaste textos y documentos para nobles, mercaderes o templos. En los márgenes de esos manuscritos hallaste secretos que cambiaron tu vida.',
+    equipo:'Suministros de calígrafo, libro en blanco, 15 po',
+  },
+  {
+    id:'guardia', icon:'⚔️', name:'Guardia', tag:'Orden',
+    stats:['Fuerza','Inteligencia','Sabiduría'], dote:'Alerta',
+    skills:['Atletismo','Percepción'], tool:'Un tipo de juego a elegir',
+    desc:'Protegiste murallas, almacenes o rutas comerciales. Aprendiste que el verdadero peligro rara vez viene de donde se espera.',
+    equipo:'Juego (el mismo que arriba), lanza, símbolo de rango, ropa de viaje, 12 po',
+  },
+  {
+    id:'guia', icon:'🗺️', name:'Guía', tag:'Explorador',
+    stats:['Destreza','Constitución','Sabiduría'], dote:'Maestro de la naturaleza',
+    skills:['Atletismo','Supervivencia'], tool:'Herramientas de cartógrafo',
+    desc:'Trazaste mapas de tierras ignotas y guiaste expediciones. Conoces rutas que no figuran en ningún pergamino conocido.',
+    equipo:'Herramientas de cartógrafo, cuerda, brújula, ropa de montaña, 10 po',
+  },
+  {
+    id:'marinero', icon:'⚓', name:'Marinero', tag:'Mar',
+    stats:['Fuerza','Destreza','Sabiduría'], dote:'Matón de taberna',
+    skills:['Acrobacias','Percepción'], tool:'Herramientas de navegante',
+    desc:'Surcaste mares tormentosos, conociste puertos de toda clase y aprendiste que el horizonte siempre esconde algo más.',
+    equipo:'Herramientas de navegante, cuerda de 15 m, ropa de viaje, 20 po',
+  },
+  {
+    id:'noble', icon:'👑', name:'Noble', tag:'Aristocracia',
+    stats:['Fuerza','Inteligencia','Carisma'], dote:'Habilidoso',
+    skills:['Historia','Persuasión'], tool:'Un tipo de juego a elegir',
+    desc:'Naciste en un linaje de poder. La educación, los contactos y los privilegios moldearon tu visión del mundo… y sus límites.',
+    equipo:'Juego (el mismo que arriba), perfume fino, ropa de calidad, sello familiar, 29 po',
+  },
+  {
+    id:'soldado', icon:'🪖', name:'Soldado', tag:'Veterano',
+    stats:['Fuerza','Destreza','Constitución'], dote:'Atacante salvaje',
+    skills:['Atletismo','Intimidación'], tool:'Un tipo de juego a elegir',
+    desc:'Te entrenaste para la guerra desde joven. El campo de batalla te forjó y dejó cicatrices que van más allá de la piel.',
+    equipo:'Juego (el mismo que arriba), lanza, arco corto, 20 flechas, aljaba, útiles de sanador, ropa de viaje, 14 po',
+  },
+  {
+    id:'vagabundo', icon:'🎒', name:'Vagabundo', tag:'Callejero',
+    stats:['Destreza','Sabiduría','Carisma'], dote:'Afortunado',
+    skills:['Perspicacia','Sigilo'], tool:'Herramientas de ladrón',
+    desc:'Creciste en las calles con pocas expectativas y mucha ingenio. El destino aún tiene algo reservado para ti.',
+    equipo:'Herramientas de ladrón, 2 dagas, bolsas, petate, ropa de viaje, 16 po',
+  },
+];
+
+// Stat arrays por clase (conjunto estándar del manual)
+const CLASS_STATS = {
+  barbaro:    {FUE:15,DES:13,CON:14,INT:10,SAB:12,CAR:8},
+  bardo:      {FUE:8, DES:14,CON:12,INT:13,SAB:10,CAR:15},
+  brujo:      {FUE:8, DES:14,CON:13,INT:12,SAB:10,CAR:15},
+  clerigo:    {FUE:14,DES:8, CON:13,INT:10,SAB:15,CAR:12},
+  druida:     {FUE:8, DES:12,CON:14,INT:13,SAB:15,CAR:10},
+  explorador: {FUE:12,DES:15,CON:13,INT:8, SAB:14,CAR:10},
+  guerrero:   {FUE:15,DES:14,CON:13,INT:8, SAB:10,CAR:12},
+  hechicero:  {FUE:10,DES:13,CON:14,INT:8, SAB:12,CAR:15},
+  mago:       {FUE:8, DES:12,CON:13,INT:15,SAB:14,CAR:10},
+  monje:      {FUE:12,DES:15,CON:13,INT:10,SAB:14,CAR:8},
+  paladin:    {FUE:15,DES:10,CON:13,INT:8, SAB:12,CAR:14},
+  picaro:     {FUE:12,DES:15,CON:13,INT:14,SAB:10,CAR:8},
+};
+
+// ═══════════════════════════════════════════════════
+//  STATE
+// ═══════════════════════════════════════════════════
+const S = { step:1, name:'', species:null, cls:null, subclass:null, bg:null };
+
+// ═══════════════════════════════════════════════════
+//  INIT
+// ═══════════════════════════════════════════════════
+window.onload = () => {
+  buildGrid('species-grid', SPECIES, 'species', 'btn2');
+  buildGrid('class-grid',   CLASSES,  'cls',     'btn3');
+  buildGrid('bg-grid',      BACKGROUNDS,'bg',    'btn5');
+};
+
+function buildGrid(containerId, items, field, btnId) {
+  document.getElementById(containerId).innerHTML = items.map(item => `
+    <div class="opt-card" id="card-${field}-${item.id}" onclick="select('${field}','${item.id}','${btnId}')">
+      <span class="opt-icon">${item.icon}</span>
+      <span class="opt-tag">${item.tag}</span>
+      <div class="opt-name">${item.name}</div>
+      <div class="opt-desc">${item.desc}</div>
+    </div>
+  `).join('');
+}
+
+// ═══════════════════════════════════════════════════
+//  NAVIGATION
+// ═══════════════════════════════════════════════════
+function goStep(n) {
+  if (n === 2) {
+    const nm = document.getElementById('char-name').value.trim();
+    if (!nm) { document.getElementById('char-name').focus(); document.getElementById('char-name').style.borderColor='var(--crimson)'; return; }
+    S.name = nm;
+  }
+  if (n === 4 && S.cls) buildSubGrid(S.cls);
+
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.getElementById('panel-'+n).classList.add('active');
+  S.step = n;
+  updateProgress(n);
+  window.scrollTo({top:0, behavior:'smooth'});
+}
+
+function updateProgress(n) {
+  for (let i=1;i<=6;i++) {
+    const el = document.getElementById('s'+i);
+    if (!el) continue;
+    el.classList.remove('active','done');
+    if (i<n) el.classList.add('done');
+    else if (i===n) el.classList.add('active');
+  }
+}
+
+// ═══════════════════════════════════════════════════
+//  SELECTION
+// ═══════════════════════════════════════════════════
+function select(field, id, btnId) {
+  document.querySelectorAll(`[id^="card-${field}-"]`).forEach(c=>c.classList.remove('selected'));
+  document.getElementById(`card-${field}-${id}`).classList.add('selected');
+  S[field] = id;
+  document.getElementById(btnId).disabled = false;
+  showDetailFor(field, id);
+}
+
+function showDetailFor(field, id) {
+  const detailId = {species:'species-detail', cls:'class-detail', subclass:'subclass-detail', bg:'bg-detail'}[field];
+  const el = document.getElementById(detailId);
+  if (!el) return;
+
+  if (field==='species') {
+    const d = SPECIES.find(x=>x.id===id);
+    el.innerHTML = `
+      <div class="detail-title">${d.icon} ${d.name}</div>
+      <div class="detail-body">
+        <strong>Tipo:</strong> ${d.type} · <strong>Tamaño:</strong> ${d.size} · <strong>Velocidad:</strong> ${d.speed}<br>
+        <strong>Idiomas:</strong> ${d.languages.join(', ')}
+      </div>
+      <div class="detail-chips">${d.traits.map(t=>`<span class="chip" title="${t.d}">⚡ ${t.n}</span>`).join('')}</div>
+      <div class="detail-body" style="margin-top:.8rem;font-size:.88rem;">
+        ${d.traits.map(t=>`<p style="margin-bottom:.4rem;"><strong>${t.n}:</strong> ${t.d}</p>`).join('')}
+      </div>`;
+  }
+  else if (field==='cls') {
+    const d = CLASSES.find(x=>x.id===id);
+    const st = CLASS_STATS[id]||{};
+    el.innerHTML = `
+      <div class="detail-title">${d.icon} ${d.name}</div>
+      <div class="detail-body"><strong>Característica principal:</strong> ${d.stat_main} · <strong>Dado PG:</strong> ${d.dado_pg} · <strong>PG Nv.1:</strong> ${d.pg_nv1}</div>
+      <div class="stats-preview" style="margin:.8rem 0;">
+        ${Object.entries(st).map(([k,v])=>`<div class="stat-box"><span class="stat-label">${k}</span><div class="stat-val">${v}</div><div class="stat-mod">${v>=10?'+':''}${Math.floor((v-10)/2)}</div></div>`).join('')}
+      </div>
+      <div class="detail-chips">${d.salvaciones.map(s=>`<span class="chip">💾 ${s}</span>`).join('')}<span class="chip">🛡️ ${d.armaduras_comp}</span></div>
+      <div class="detail-body" style="margin-top:.8rem;font-size:.88rem;">
+        ${d.rasgos_nv1.map(r=>`<p style="margin-bottom:.4rem;"><strong>${r.n}:</strong> ${r.d}</p>`).join('')}
+      </div>`;
+  }
+  else if (field==='subclass') {
+    const subs = SUBCLASSES[S.cls]||[];
+    const d = subs.find(x=>x.n===id);
+    if (!d) return;
+    el.innerHTML = `
+      <div class="detail-title">${d.icon} ${d.n}</div>
+      <div class="detail-body">${d.d}</div>
+      <div class="detail-body" style="margin-top:.6rem;font-size:.85rem;color:rgba(245,232,199,.55);font-style:italic;">Esta subcategoría se desbloquea en el nivel 3 del personaje.</div>`;
+  }
+  else if (field==='bg') {
+    const d = BACKGROUNDS.find(x=>x.id===id);
+    el.innerHTML = `
+      <div class="detail-title">${d.icon} ${d.name}</div>
+      <div class="detail-body">${d.desc}</div>
+      <div class="detail-chips">
+        ${d.stats.map(s=>`<span class="chip">📊 ${s}</span>`).join('')}
+        <span class="chip">🎯 ${d.skills[0]}</span>
+        <span class="chip">🎯 ${d.skills[1]}</span>
+        <span class="chip">🔧 ${d.tool}</span>
+        <span class="chip">✨ Dote: ${d.dote}</span>
+      </div>
+      <div class="detail-body" style="margin-top:.6rem;font-size:.88rem;"><strong>Equipo:</strong> ${d.equipo}</div>`;
+  }
+  el.classList.add('visible');
+}
+
+function buildSubGrid(clsId) {
+  const subs = SUBCLASSES[clsId]||[];
+  const cls = CLASSES.find(c=>c.id===clsId);
+  document.getElementById('subclass-intro').textContent = `Como ${cls?.name||clsId}, elige una de estas cuatro especializaciones. Se desbloquea en el nivel 3, pero define tu identidad desde el inicio.`;
+  document.getElementById('subclass-grid').innerHTML = subs.map(s=>`
+    <div class="opt-card" id="card-subclass-${encodeURIComponent(s.n)}" onclick="selectSub('${s.n.replace(/'/g,"\\'")}')">
+      <span class="opt-icon">${s.icon}</span>
+      <div class="opt-name">${s.n}</div>
+      <div class="opt-desc">${s.d.slice(0,80)}…</div>
+    </div>
+  `).join('');
+  S.subclass=null;
+  document.getElementById('btn4').disabled=true;
+  document.getElementById('subclass-detail').classList.remove('visible');
+}
+
+function selectSub(name) {
+  document.querySelectorAll('[id^="card-subclass-"]').forEach(c=>c.classList.remove('selected'));
+  const safe = encodeURIComponent(name);
+  const el = document.getElementById(`card-subclass-${safe}`);
+  if (el) el.classList.add('selected');
+  S.subclass = name;
+  document.getElementById('btn4').disabled=false;
+  showDetailFor('subclass', name);
+}
+
+// ═══════════════════════════════════════════════════
+//  RANDOM NAMES
+// ═══════════════════════════════════════════════════
+const SURNAMES = {
+  epico:    ['Vashtar','Forjafuego','Almaoscura','del Multiverso','Sombradragón','Lucestelares','Corazónpiedra','Veladoragón','Soploluz','Almaacero'],
+  comun:    ['Herrero','Molinero','Carpintero','del Valle','de la Colina','Tejedor','Panadero','Cazador','Pescador','Labrador'],
+  oscuro:   ['Sombra','Niebla','Tinieblas','del Vacío','Ceniza','Sangre','Hueso','Maldición','Abismo','Fúnebre'],
+  elfo:     ['Lunaplata','Estrellabrillo','Hojadeplata','Ventodeamanecer','Ríocristal','Salvajedanza','Cantoestrellado','Bosqueprofundo','Luzcrepuscular','Nieveeterna'],
+  enano:    ['Piedrahierro','Martillodoro','Yunquefuerte','Barbabronce','Picopedra','Brazoacero','Hachadorada','Forjareal','Minagris','Corazónroca'],
+  humano:   ['Aldric','Brennan','Castro','Dorian','Elan','Fabian','Grant','Hadwin','Irvin','Jarek'],
+  mediano:  ['Bolsón','Tuk','Boffin','Brandybuck','Cuevagrande','Maggot','Olo','Gamyi','Piedragris','Vergel'],
+  orco:     ['Aplastacraneos','Rompehuesos','Golpeseco','Colmilloagudo','Manotazos','Machacatodo','Garraférrrea','Piel-de-Roca','Rugidoferoz','Hierroduro'],
+};
+
+function randomName(type) {
+  const arr = NAMES[type] || NAMES.epico;
+  const n = arr[Math.floor(Math.random()*arr.length)];
+  document.getElementById('char-name').value = n;
+  document.getElementById('char-name').style.borderColor='';
+}
+
+function randomNameCombined() {
+  const cats = ['epico','comun','oscuro','elfo','enano','humano','mediano','orco'];
+  const cat = cats[Math.floor(Math.random()*cats.length)];
+  const firstArr = NAMES[cat] || NAMES.epico;
+  const surnameArr = SURNAMES[cat] || SURNAMES.comun;
+  const first = firstArr[Math.floor(Math.random()*firstArr.length)];
+  const last  = surnameArr[Math.floor(Math.random()*surnameArr.length)];
+  document.getElementById('char-name').value = `${first} ${last}`;
+  document.getElementById('char-name').style.borderColor='';
+}
+
+// ═══════════════════════════════════════════════════
+//  GENERATE SHEET
+// ═══════════════════════════════════════════════════
+function showSheet() {
+  document.getElementById('wizard').style.display='none';
+  document.getElementById('sheet-wrap').style.display='block';
+  updateProgress(6);
+
+  const sp = SPECIES.find(x=>x.id===S.species);
+  const cl = CLASSES.find(x=>x.id===S.cls);
+  const bg = BACKGROUNDS.find(x=>x.id===S.bg);
+  const subs = (SUBCLASSES[S.cls]||[]).find(x=>x.n===S.subclass)||{n:S.subclass,d:''};
+
+  // Stats: combine class defaults with background bonuses
+  const rawStats = {...CLASS_STATS[S.cls]};
+  // Apply background stat bonuses (+2 to first, +1 to second)
+  if (bg && bg.stats.length>=2) {
+    const statMap = {Fuerza:'FUE',Destreza:'DES',Constitución:'CON',Inteligencia:'INT',Sabiduría:'SAB',Carisma:'CAR'};
+    const k0=statMap[bg.stats[0]], k1=statMap[bg.stats[1]], k2=bg.stats[2]?statMap[bg.stats[2]]:null;
+    if(k0 && rawStats[k0]!==undefined) rawStats[k0] = Math.min(20, rawStats[k0]+2);
+    if(k1 && rawStats[k1]!==undefined) rawStats[k1] = Math.min(20, rawStats[k1]+1);
+    if(k2 && rawStats[k2]!==undefined) rawStats[k2] = Math.min(20, rawStats[k2]+1);
+  }
+  const mod = v => { const m=Math.floor((v-10)/2); return (m>=0?'+':'')+m; };
+  const conMod = Math.floor((rawStats.CON-10)/2);
+  const desMod = Math.floor((rawStats.DES-10)/2);
+
+  // HP
+  let pgBase = cl.id==='barbaro' ? 12 : (cl.id==='explorador'||cl.id==='guerrero'||cl.id==='paladin') ? 10 : (cl.id==='hechicero'||cl.id==='mago') ? 6 : 8;
+  const pg = pgBase + conMod + (sp.id==='enano' ? 1 : 0); // enanos +1 PG por tenacidad
+
+  // AC
+  let ca;
+  if (cl.id==='barbaro') ca = 10+desMod+Math.floor((rawStats.CON-10)/2);
+  else if (cl.id==='monje') ca = 10+desMod+Math.floor((rawStats.SAB-10)/2);
+  else if (['mago','brujo','hechicero'].includes(cl.id)) ca = 10+desMod;
+  else if (['bardo','clerigo','druida','explorador','picaro'].includes(cl.id)) ca = 13+desMod; // cuero
+  else ca = 16; // cota de malla
+
+  const statsHTML = Object.entries(rawStats).map(([k,v])=>`
+    <div class="sheet-stat">
+      <span class="sheet-stat-label">${k}</span>
+      <span class="sheet-stat-val">${v}</span>
+      <div class="sheet-stat-mod">${mod(v)}</div>
+    </div>`).join('');
+
+  const traitsHTML = cl.rasgos_nv1.map(r=>`
+    <div class="trait-item">
+      <span class="trait-name">${r.n}</span>
+      ${r.d}
+    </div>`).join('');
+
+  const speciesTraitsHTML = sp.traits.slice(0,3).map(t=>`
+    <div class="trait-item">
+      <span class="trait-name">${t.n}</span>
+      ${t.d}
+    </div>`).join('');
+
+  // Habilidades: class list + bg skills
+  const habs = [bg.skills[0], bg.skills[1]];
+  if (cl.habilidades_lista[0]!=='Cualquier habilidad') {
+    const extra = cl.habilidades_lista.filter(h=>!habs.includes(h)).slice(0,2);
+    habs.push(...extra);
+  } else {
+    habs.push('Actuación','Persuasión');
+  }
+  const habsUnique = [...new Set(habs)];
+
+  // História generada proceduralmente
+  const historias = [
+    `${S.name} creció como ${bg.name.toLowerCase()}, aprendiendo ${bg.skills[0].toLowerCase()} y ${bg.skills[1].toLowerCase()} desde joven. Su herencia ${sp.name.toLowerCase()} le otorgó ${sp.traits[0].n.toLowerCase()}, un don que pronto le fue indispensable. El día que decidió convertirse en ${cl.name.toLowerCase()} marcó el inicio de una nueva vida.`,
+    `Nacido/a entre los ${sp.name.toLowerCase()}s, ${S.name} siempre supo que su destino era mayor que su origen. Años como ${bg.name.toLowerCase()} forjaron su carácter antes de que la llamada de ${cl.name.toLowerCase()} llegara. Ahora empuña su poder como quien sostiene una antorcha en la oscuridad.`,
+    `${S.name} nunca encajó del todo como ${bg.name.toLowerCase()}. Su naturaleza ${sp.name.toLowerCase()} y su inclinación hacia las artes del ${cl.name.toLowerCase()} siempre le hicieron diferente. Un día, esa diferencia se convirtió en su mayor fortaleza.`,
+  ];
+  const historia = historias[Math.floor(Math.random()*historias.length)];
+
+  document.getElementById('sheet').innerHTML = `
+    <div class="sheet-header">
+      <div class="sheet-pre">Dungeons &amp; Dragons 2024 · Ficha de Personaje · Nivel 1</div>
+      <div class="sheet-name">${S.name}</div>
+      <div class="sheet-meta">${sp.name} &nbsp;·&nbsp; ${cl.name} &nbsp;·&nbsp; ${bg.name}</div>
+    </div>
+
+    <div class="sheet-stats-row">${statsHTML}</div>
+
+    <div class="sheet-boxes">
+      <div class="sheet-box"><span class="sheet-box-label">Puntos de Golpe</span><div class="sheet-box-val">${Math.max(1,pg)}</div></div>
+      <div class="sheet-box"><span class="sheet-box-label">Clase de Armadura</span><div class="sheet-box-val">${ca}</div></div>
+      <div class="sheet-box"><span class="sheet-box-label">Velocidad</span><div class="sheet-box-val">${sp.speed}</div></div>
+      <div class="sheet-box"><span class="sheet-box-label">Iniciativa</span><div class="sheet-box-val">${mod(rawStats.DES)}</div></div>
+      <div class="sheet-box"><span class="sheet-box-label">Bonif. Competencia</span><div class="sheet-box-val">+2</div></div>
+      <div class="sheet-box"><span class="sheet-box-label">Dado de Golpe</span><div class="sheet-box-val">${cl.dado_pg}</div></div>
+    </div>
+
+    <div class="sheet-grid">
+      <div>
+        <div class="sheet-section">
+          <div class="sheet-section-title">Rasgos de Clase — ${cl.name}</div>
+          <div class="sheet-content">${traitsHTML}</div>
+        </div>
+        <div class="sheet-section">
+          <div class="sheet-section-title">Subcategoría — ${subs.n} <em style="font-family:'Crimson Text';font-size:.85em;color:var(--crimson)">(nv. 3)</em></div>
+          <div class="sheet-content" style="font-size:.92rem;color:var(--ink-light)">${subs.d}</div>
+        </div>
+      </div>
+      <div>
+        <div class="sheet-section">
+          <div class="sheet-section-title">Rasgos de Especie — ${sp.name}</div>
+          <div class="sheet-content">${speciesTraitsHTML}</div>
+        </div>
+        <div class="sheet-section">
+          <div class="sheet-section-title">Trasfondo — ${bg.name}</div>
+          <div class="sheet-content">
+            <div class="trait-item"><span class="trait-name">Dote de origen</span>${bg.dote}</div>
+            <div class="trait-item"><span class="trait-name">Competencias</span>${bg.skills.join(' · ')} · ${bg.tool}</div>
+            <div class="trait-item"><span class="trait-name">Bonus de características</span>${bg.stats[0]} +2, ${bg.stats[1]} +1${bg.stats[2]?', '+bg.stats[2]+' +1':''}</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="sheet-grid">
+      <div class="sheet-section">
+        <div class="sheet-section-title">Competencias en Salvación</div>
+        <div class="list-inline">${cl.salvaciones.join(' · ')}</div>
+      </div>
+      <div class="sheet-section">
+        <div class="sheet-section-title">Habilidades</div>
+        <div class="list-inline">${habsUnique.join(' · ')}</div>
+      </div>
+    </div>
+
+    <div class="sheet-grid">
+      <div class="sheet-section">
+        <div class="sheet-section-title">Competencia con Armas</div>
+        <div class="sheet-content" style="font-size:.92rem;">${cl.armas}</div>
+      </div>
+      <div class="sheet-section">
+        <div class="sheet-section-title">Competencia con Armaduras</div>
+        <div class="sheet-content" style="font-size:.92rem;">${cl.armaduras_comp}</div>
+      </div>
+    </div>
+
+    <div class="sheet-section">
+      <div class="sheet-section-title">Equipo Inicial</div>
+      <div class="sheet-content" style="font-size:.92rem;">
+        <div style="margin-bottom:.5rem;"><strong>Opción A:</strong> ${cl.equipo[0][0]}</div>
+        <div style="color:var(--crimson);font-style:italic;margin-bottom:.7rem;"><strong>Opción B:</strong> ${cl.equipo[0][1]} en monedas de oro para comprar equipo propio.</div>
+        <div style="margin-top:.5rem;"><strong>Equipo del trasfondo:</strong> ${bg.equipo}</div>
+      </div>
+    </div>
+
+    <div class="sheet-section">
+      <div class="sheet-section-title">Idiomas</div>
+      <div class="list-inline">${sp.languages.join(' · ')}</div>
+    </div>
+
+    <div class="sheet-section">
+      <div class="sheet-section-title">Historia del Personaje</div>
+      <div class="history-box">${historia}</div>
+    </div>
+  `;
+
+  window.scrollTo({top:0, behavior:'smooth'});
+}
+
+// ═══════════════════════════════════════════════════
+//  RESET
+// ═══════════════════════════════════════════════════
+function resetAll() {
+  S.step=1; S.name=''; S.species=null; S.cls=null; S.subclass=null; S.bg=null;
+  document.getElementById('sheet-wrap').style.display='none';
+  document.getElementById('wizard').style.display='block';
+  document.getElementById('char-name').value='';
+  document.querySelectorAll('.opt-card').forEach(c=>c.classList.remove('selected'));
+  document.querySelectorAll('.detail-box').forEach(b=>b.classList.remove('visible'));
+  ['btn2','btn3','btn4','btn5'].forEach(b=>{const el=document.getElementById(b);if(el)el.disabled=true;});
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+  document.getElementById('panel-1').classList.add('active');
+  updateProgress(1);
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+</script>
+</body>
+</html>
