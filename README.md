@@ -1,34 +1,56 @@
-# DnD-Character-Creator
+# Creador de Fichas de DnD
 
-Creador de fichas de Dnd Basica apenas pocas opciones. Basado en el PHB 2024 de la 5.5e en castellano. Opciones disponibles:
-V1
-  -Generador de nombres basico
-  -especie
-  -clase
-  -subclase
-  -transfondo
-  -ver/exportar ficha
+Creador de fichas de Dungeons & Dragons básico, con distintas versiones de evolución del proyecto.
 
-V3
-  -Generador de nombres
-  -especie
-  -clase
-  -subclase
-  -transfondo
-  -nivel
-  -hechizos
-  -ver/exportar ficha
+Basado en el **Player’s Handbook (PHB) 2024** de la edición **5.5e**, en castellano.
 
-V4
- - Generador de nombres
-  -especie
-  -clase
-  -subclase
-  -transfondo
-  -Stats ( tirada de dados , standar array, compra de puntos )
-  -nivel
-  -hechizos
-  -equipo
-  -dotes
-  -personalidad
-  -ver/exportar ficha
+---
+
+## Opciones disponibles
+
+### V1
+
+* Generador de nombres básico
+* Especie
+* Clase
+* Subclase
+* Trasfondo
+* Ver / Exportar ficha
+
+---
+
+### V3
+
+* Generador de nombres
+* Especie
+* Clase
+* Subclase
+* Trasfondo
+* Nivel
+* Hechizos
+* Ver / Exportar ficha
+
+---
+
+### V4
+
+* Generador de nombres
+* Especie
+* Clase
+* Subclase
+* Trasfondo
+* Stats:
+
+  * Tirada de dados
+  * Standard Array
+  * Compra de puntos
+* Nivel
+* Hechizos
+* Equipo
+* Dotes
+* Personalidad
+* Ver / Exportar ficha
+
+---
+
+Proyecto orientado a mantener una versión HTML offline, organizada y accesible mediante GitHub Pages.
